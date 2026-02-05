@@ -2,19 +2,67 @@
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import type { CardInstance } from '@/types/card'
+import { fetchCardByName, getImageUrl } from '@/services/scryfall'
+import { getCachedCard, cacheCard } from '@/services/cache'
 
 const game = useGameStore()
+const loading = ref(false)
 const showLoadModal = ref(true)
-const testCards: CardInstance[] = [
-    { id: '1', cardId: 'sol-ring',      name: 'Sol Ring',      imageUrl: '', zone: 'library', tapped: false, faceDown: false, isCommander: false, isToken: false, counters: [], position: 0, isFlipped: false },
-    { id: '2', cardId: 'cmd-tower',     name: 'Command Tower', imageUrl: '', zone: 'library', tapped: false, faceDown: false, isCommander: false, isToken: false, counters: [], position: 1, isFlipped: false },
-    { id: '3', cardId: 'path-to-exile', name: 'Path to Exile', imageUrl: '', zone: 'library', tapped: false, faceDown: false, isCommander: false, isToken: false, counters: [], position: 2, isFlipped: false },
-]
 
-function loadTestCards() {
-    game.library = testCards
+// const testCards: CardInstance[] = [
+//     { id: '1', cardId: 'sol-ring',      name: 'Sol Ring',      imageUrl: '', zone: 'library', tapped: false, faceDown: false, isCommander: false, isToken: false, counters: [], position: 0, isFlipped: false },
+//     { id: '2', cardId: 'cmd-tower',     name: 'Command Tower', imageUrl: '', zone: 'library', tapped: false, faceDown: false, isCommander: false, isToken: false, counters: [], position: 1, isFlipped: false },
+//     { id: '3', cardId: 'path-to-exile', name: 'Path to Exile', imageUrl: '', zone: 'library', tapped: false, faceDown: false, isCommander: false, isToken: false, counters: [], position: 2, isFlipped: false },
+// ]
+
+async function loadTestCards() {
+    loading.value = true
+    const cardNames = ['Sol Ring', 'Command Tower', 'Path to Exile']
+    const loadedCards: CardInstance[] = []
+
+    for (const name of cardNames) {
+        let scryfallCard = await getCachedCard(name)
+
+        if (!scryfallCard) {
+            scryfallCard = await fetchCardByName(name)
+
+            if (scryfallCard) {
+                await cacheCard(scryfallCard)
+            }
+        }
+
+        if (scryfallCard) {
+            const cardInstance: CardInstance = {
+                id: crypto.randomUUID(),
+                cardId: scryfallCard.id,
+                name: scryfallCard.name,
+                imageUrl: getImageUrl(scryfallCard),
+                zone: 'library',
+                tapped: false,
+                faceDown: false,
+                isCommander: false,
+                isToken: false,
+                counters: [],
+                position: loadedCards.length,
+                isFlipped: false,
+            }
+            loadedCards.push(cardInstance)
+        }
+    }
+
+    game.library = loadedCards
     game.shuffleLibrary()
+    loading.value = false
     showLoadModal.value = false
+}
+
+async function testFetchCard() {
+    const card = await fetchCardByName('Sol Ring')
+
+    if (card) {
+        console.log('Fetched card:', card)
+        console.log('Image URL:', getImageUrl(card))
+    }
 }
 </script>
 
@@ -40,8 +88,11 @@ function loadTestCards() {
          <div v-if="showLoadModal" class="modal-overlay" @click="showLoadModal = false">
             <div class="modal-content" @click.stop>
                 <h2>Load Deck</h2>
-                <p>Load test cards to start the game</p>
-                <button @click="loadTestCards">Load Test Cards</button>
+                <p v-if="loading">Loading cards...</p>
+                <p v-else>Load test cards to start the game</p>
+                <button @click="loadTestCards" :disabled="loading">
+                    {{ loading ? 'Loading...' : 'Load Test Cards' }}
+                </button>
                 <button @click="showLoadModal = false">Cancel</button>
             </div>
          </div>
