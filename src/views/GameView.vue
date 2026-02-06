@@ -9,6 +9,9 @@ const game = useGameStore()
 const loading = ref(false)
 const showLoadModal = ref(true)
 const draggedCardId = ref<string | null>(null)
+const contextMenuCard = ref<string | null>(null)
+const contextMenuPosition = ref(({ x: 0, y: 0 }))
+const showContextMenu = ref(false)
 
 async function loadTestCards() {
     loading.value = true
@@ -81,6 +84,30 @@ function handleDragEnd() {
 function handleDragOver(event: DragEvent) {
     event.preventDefault()
 }
+
+function handleContextMenu(event: MouseEvent, cardId: string) {
+    event.preventDefault()
+    contextMenuCard.value = cardId
+    contextMenuPosition.value = { x: event.clientX, y: event.clientY }
+    showContextMenu.value = true
+}
+
+function moveToGraveyard() {
+    if (contextMenuCard.value) {
+        const card = game.findCard(contextMenuCard.value)
+
+        if (card) {
+            game.moveCard(contextMenuCard.value, card.zone, 'graveyard')
+        }
+    }
+
+    closeContextMenu()
+}
+
+function closeContextMenu() {
+    showContextMenu.value = false
+    contextMenuCard.value = null
+}
 </script>
 
 <template>
@@ -89,7 +116,8 @@ function handleDragOver(event: DragEvent) {
         <div class="battlefield" @dragover="handleDragOver" @drop="handleDrop('battlefield')">
             <h3>Battlefield</h3>
             <div class="battlefield-cards">
-                <div v-for="card in game.battlefield" :key="card.id" class="card">
+                <div v-for="card in game.battlefield" :key="card.id" class="card"
+                    @contextmenu="handleContextMenu($event, card.id)">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                 </div>
 
@@ -149,6 +177,17 @@ function handleDragOver(event: DragEvent) {
                 <button @click="showLoadModal = false">Cancel</button>
             </div>
         </div>
+
+        <!-- Context Menu -->
+        <div v-if="showContextMenu" class="context-menu"
+            :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }" @click.stop>
+            <div class="context-menu-item" @click="moveToGraveyard">
+                Move to Graveyard
+            </div>
+        </div>
+
+        <!-- Click outside to close context menu -->
+        <div v-if="showContextMenu" class="context-menu-overlay" @click="closeContextMenu"></div>
     </div>
 </template>
 
@@ -390,5 +429,35 @@ function handleDragOver(event: DragEvent) {
 .battlefield.drag-over {
     border-color: #00ff88;
     background: linear-gradient(135deg, #1a2a1a 0%, #2a1a2a 100%);
+}
+
+.context-menu {
+    position: fixed;
+    background: #2a2a3a;
+    border: 2px solid #00d4ff;
+    border-radius: 4px;
+    z-index: 2000;
+    min-width: 150px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.context-menu-item {
+    padding: 0.75rem 1rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.context-menu-item:hover {
+    background: rgba(0, 212, 255, 0.2);
+}
+
+.context-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1999;
 }
 </style>
