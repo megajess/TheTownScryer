@@ -323,18 +323,6 @@ function handleCardLeave() {
     transform: translateY(-2px);
 }
 
-.hand {
-    grid-area: hand;
-    background: rgba(0, 0, 0, 0.4);
-    border: 2px solid rgba(0, 212, 255, 0.5);
-    border-radius: 8px;
-    padding: 1rem;
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-
 .hand-zone {
     grid-area: hand;
     position: relative;
@@ -376,12 +364,6 @@ function handleCardLeave() {
     width: 100%;
     height: 100%;
     background-repeat: no-repeat;
-}
-
-.card-magnifier img {
-    width: 100%;
-    border-radius: 12px;
-    border: 3px solid #74c69d;
 }
 
 .card {
