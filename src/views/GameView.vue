@@ -67,27 +67,59 @@ async function testFetchCard() {
 </script>
 
 <template>
-    <div>
-        <h2>The Town Scryer</h2>
+    <div class="gmae-layout">
+        <!-- Battlefield -->
+        <div class="battlefield">
+            <h3>Battlefield</h3>
+            <div class="battlefield-cards">
+                <div v-for="card in game.battlefield" :key="card.id" class="card">
+                    <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                </div>
 
-        <button @click="showLoadModal = true">Load Deck</button>
-        <button @click="game.draw()">Draw</button>
-
-        <p>Library: {{ game.library.length }} cards</p>
-        <p>Hand: {{ game.hand.length }} cards</p>
-        <p>Graveyard: {{ game.graveyard.length }} cards</p>
-
-        <div class="hand">
-            <div v-for="card in game.hand" :key="card.id" class="card">
-                <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
-                <button @click="game.discard(card.id)" class="discard-btn">Discard</button>
+                <p v-if="game.battlefield.length === 0" class="empty">No cards on battlefield</p>
             </div>
         </div>
 
-        <p v-if="game.hand.length === 0" class="empty-message">No cards in hand</p>
+        <!-- Utility Zones (stacked in corner) -->
+        <div class="utility-zones">
+            <div class="zone-stack">
+                <div class="mini-zone">
+                    <span class="zone-label">Command Zone</span>
+                    <span class="zone-count">{{ game.commandZone.length }}</span>
+                </div>
+                <div class="mini-zone">
+                    <span class="zone-label">Library</span>
+                    <span class="zone-count">{{ game.library.length }}</span>
+                </div>
+                <div class="mini-zone">
+                    <span class="zone-label">Graveyard</span>
+                    <span class="zone-count">{{ game.graveyard.length }}</span>
+                </div>
+                <div class="mini-zone">
+                    <span class="zone-label">Exile</span>
+                    <span class="zone-count">{{ game.exile.length }}</span>
+                </div>
+            </div>
+            <button @click="game.draw()" class="action-btn">Draw</button>
+        </div>
 
-        <!-- Deck Loader modal overlay -->
-         <div v-if="showLoadModal" class="modal-overlay" @click="showLoadModal = false">
+        <!-- Hand -->
+        <div class="hand-zone">
+            <h3>Hand</h3>
+            <div class="hand-cards">
+                <div v-for="card in game.hand" :key="card.id" class="card">
+                    <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                    <button @click="game.discard(card.id)" class="discard-btn">Discard</button>
+                </div>
+                <p v-if="game.hand.length === 0" class="empty">No cards in hand</p>
+            </div>
+        </div>
+
+        <!-- Load Deck Button (floating) -->
+        <button @click="showLoadModal = true" class="load-deck-btn">Load Deck</button>
+
+        <!-- Deck Loader Modal -->
+        <div v-if="showLoadModal" class="modal-overlay" @click="showLoadModal = false">
             <div class="modal-content" @click.stop>
                 <h2>Load Deck</h2>
                 <p v-if="loading">Loading cards...</p>
@@ -97,57 +129,131 @@ async function testFetchCard() {
                 </button>
                 <button @click="showLoadModal = false">Cancel</button>
             </div>
-         </div>
+        </div>
     </div>
 </template>
+
 <style scoped>
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+.game-layout {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 250px;
+    grid-template-rows: 2fr 1fr;
+    grid-template-areas:
+        "battlefield utility"
+        "hand hand";
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #0a0a0a;
+    color: #e0e0e0;
 }
 
-.modal-content {
-    background: white;
-    padding: 2rem;
+.battlefield {
+    grid-area: battlefield;
+    background: linear-gradient(135deg, #2a1a1a 0%, #1a1a2a 100%);
+    border: 2px solid #00d4ff;
     border-radius: 8px;
-    max-width: 500px;
-    width: 90%;
+    padding: 1rem;
+    overflow-y: auto;
 }
 
-.modal-content button {
-    margin-right: 0.5rem;
-    margin-top: 1rem;
+.battlefield h3 {
+    margin: 0 0 1rem 0;
+    color: #00d4ff;
+    font-size: 1.2rem;
 }
 
-.hand {
+.battlefield-cards {
     display: flex;
-    gap: 1rem;
     flex-wrap: wrap;
-    margin-top: 1rem;
+    gap: 0.5rem;
+}
+
+.utility-zones {
+    grid-area: utility;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.zone-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mini-zone {
+    background: rgba(30, 30, 50, 0.8);
+    border: 1px solid #00d4ff;
+    border-radius: 4px;
+    padding: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.zone-label {
+    font-size: 0.9rem;
+    color: #b0b0b0;
+}
+
+.zone-count {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+.action-btn {
+    padding: 0.75rem;
+    background: #00d4ff;
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #00b8e6;
+    transform: translateY(-2px);
+}
+
+.hand-zone {
+    grid-area: hand;
+    background: linear-gradient(135deg, #1a2a1a 0%, #1a1a2a 100%);
+    border: 2px solid #00ff88;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.hand-zone h3 {
+    margin: 0 0 0.5rem 0;
+    color: #00ff88;
+    font-size: 1.2rem;
+}
+
+.hand-cards {
+    display: flex;
+    gap: 0.5rem;
 }
 
 .card {
     position: relative;
-    width: 200px;
+    width: 150px;
+    flex-shrink: 0;
 }
 
 .card img {
     width: 100%;
     height: auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     transition: transform 0.2s;
 }
 
-.card img:hover {
+.card:hover img {
     transform: scale(1.05);
 }
 
@@ -156,23 +262,105 @@ async function testFetchCard() {
     bottom: 0.5rem;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 0, 0, 0.8);
+    background: rgba(255, 0, 0, 0.9);
     color: white;
     border: none;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 4px;
+    font-size: 0.8rem;
     cursor: pointer;
     opacity: 0;
-    transition: 0.2s;
+    transition: opacity 0.2s;
 }
 
 .card:hover .discard-btn {
     opacity: 1;
 }
 
-.empty-message {
+.empty {
     color: #666;
     font-style: italic;
+}
+
+.load-deck-btn {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(0, 212, 255, 0.2);
+    border: 2px solid #00d4ff;
+    color: #00d4ff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 100;
+    transition: all 0.2s;
+}
+
+.load-deck-btn:hover {
+    background: rgba(0, 212, 255, 0.4);
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1a1a2a;
+    color: #e0e0e0;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 2px solid #00d4ff;
+    max-width: 500px;
+    width: 90%;
+}
+
+.modal-content h2 {
+    color: #00d4ff;
+    margin-bottom: 1rem;
+}
+
+.modal-content button {
+    margin-right: 0.5rem;
     margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.modal-content button:first-of-type {
+    background: #00d4ff;
+    color: #000;
+}
+
+.modal-content button:first-of-type:hover {
+    background: #00b8e6;
+}
+
+.modal-content button:last-of-type {
+    background: #333;
+    color: #e0e0e0;
+}
+
+.modal-content button:last-of-type:hover {
+    background: #444;
+}
+
+.modal-content button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 </style>
