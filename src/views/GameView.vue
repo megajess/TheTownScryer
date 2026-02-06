@@ -146,6 +146,7 @@ function closeContextMenu() {
                 </div>
             </div>
             <button @click="game.draw()" class="action-btn">Draw</button>
+            <button @click="showLoadModal = true" class="action-btn">Load Deck</button>
         </div>
 
         <!-- Hand -->
@@ -161,9 +162,6 @@ function closeContextMenu() {
                 <p v-if="game.hand.length === 0" class="empty">No cards in hand</p>
             </div>
         </div>
-
-        <!-- Load Deck Button (floating) -->
-        <button @click="showLoadModal = true" class="load-deck-btn">Load Deck</button>
 
         <!-- Deck Loader Modal -->
         <div v-if="showLoadModal" class="modal-overlay" @click="showLoadModal = false">
@@ -192,32 +190,45 @@ function closeContextMenu() {
 </template>
 
 <style scoped>
+:global(body, html) {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
 .game-layout {
-    height: 100vh;
     display: grid;
-    grid-template-columns: 1fr 250px;
-    grid-template-rows: 2fr 1fr;
     grid-template-areas:
-        "battlefield utility"
-        "hand hand";
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: #0a0a0a;
-    color: #e0e0e0;
+        'battlefield battlefield battlefield utility'
+        'battlefield battlefield battlefield utility'
+        'hand hand hand hand';
+    grid-template-columns: 1fr 1fr 1fr 200px;
+    grid-template-rows: 2fr 2fr 2fr;
+    gap: 1rem;
+    padding: 1rem;
+    background: #081c15;
+    height: 100vh;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .battlefield {
     grid-area: battlefield;
-    background: linear-gradient(135deg, #2a1a1a 0%, #1a1a2a 100%);
-    border: 2px solid #00d4ff;
+    background-color: #1b4332;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%2352b788' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    border: 2px solid rgba(82, 183, 136, 0.5);
     border-radius: 8px;
     padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-content: flex-start;
     overflow-y: auto;
 }
 
 .battlefield h3 {
     margin: 0 0 1rem 0;
-    color: #00d4ff;
+    color: #95d5b2;
     font-size: 1.2rem;
 }
 
@@ -229,6 +240,9 @@ function closeContextMenu() {
 
 .utility-zones {
     grid-area: utility;
+    background: #1b4332;
+    border-radius: 8px;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -241,8 +255,8 @@ function closeContextMenu() {
 }
 
 .mini-zone {
-    background: rgba(30, 30, 50, 0.8);
-    border: 1px solid #00d4ff;
+    background: rgba(27, 67, 50, 0.6);
+    border: 1px solid #52b788;
     border-radius: 4px;
     padding: 0.75rem;
     display: flex;
@@ -252,19 +266,19 @@ function closeContextMenu() {
 
 .zone-label {
     font-size: 0.9rem;
-    color: #b0b0b0;
+    color: #b7e4c7;
 }
 
 .zone-count {
     font-size: 1.1rem;
     font-weight: bold;
-    color: #00d4ff;
+    color: #95d5b2;
 }
 
 .action-btn {
     padding: 0.75rem;
-    background: #00d4ff;
-    color: #000;
+    background: #52b788;
+    color: #081c15;
     border: none;
     border-radius: 4px;
     font-weight: bold;
@@ -273,14 +287,26 @@ function closeContextMenu() {
 }
 
 .action-btn:hover {
-    background: #00b8e6;
+    background: #74c69d;
     transform: translateY(-2px);
+}
+
+.hand {
+    grid-area: hand;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(0, 212, 255, 0.5);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .hand-zone {
     grid-area: hand;
-    background: linear-gradient(135deg, #1a2a1a 0%, #1a1a2a 100%);
-    border: 2px solid #00ff88;
+    background: linear-gradient(135deg, #0d2818 0%, #1b4332 100%);
+    border: 2px solid #74c69d;
     border-radius: 8px;
     padding: 1rem;
     overflow-x: auto;
@@ -288,7 +314,7 @@ function closeContextMenu() {
 
 .hand-zone h3 {
     margin: 0 0 0.5rem 0;
-    color: #00ff88;
+    color: #95d5b2;
     font-size: 1.2rem;
 }
 
@@ -340,25 +366,6 @@ function closeContextMenu() {
     font-style: italic;
 }
 
-.load-deck-btn {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    padding: 0.75rem 1.5rem;
-    background: rgba(0, 212, 255, 0.2);
-    border: 2px solid #00d4ff;
-    color: #00d4ff;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    z-index: 100;
-    transition: all 0.2s;
-}
-
-.load-deck-btn:hover {
-    background: rgba(0, 212, 255, 0.4);
-}
-
 /* Modal styles */
 .modal-overlay {
     position: fixed;
@@ -374,17 +381,17 @@ function closeContextMenu() {
 }
 
 .modal-content {
-    background: #1a1a2a;
-    color: #e0e0e0;
+    background: #1b4332;
+    color: #d8f3dc;
     padding: 2rem;
     border-radius: 8px;
-    border: 2px solid #00d4ff;
+    border: 2px solid #52b788;
     max-width: 500px;
     width: 90%;
 }
 
 .modal-content h2 {
-    color: #00d4ff;
+    color: #95d5b2;
     margin-bottom: 1rem;
 }
 
@@ -400,21 +407,21 @@ function closeContextMenu() {
 }
 
 .modal-content button:first-of-type {
-    background: #00d4ff;
-    color: #000;
+    background: #52b788;
+    color: #081c15;
 }
 
 .modal-content button:first-of-type:hover {
-    background: #00b8e6;
+    background: #74c69d;
 }
 
 .modal-content button:last-of-type {
-    background: #333;
-    color: #e0e0e0;
+    background: #2d6a4f;
+    color: #d8f3dc;
 }
 
 .modal-content button:last-of-type:hover {
-    background: #444;
+    background: #40916c;
 }
 
 .modal-content button:disabled {
@@ -427,14 +434,14 @@ function closeContextMenu() {
 }
 
 .battlefield.drag-over {
-    border-color: #00ff88;
-    background: linear-gradient(135deg, #1a2a1a 0%, #2a1a2a 100%);
+    border-color: #74c69d;
+    background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
 }
 
 .context-menu {
     position: fixed;
-    background: #2a2a3a;
-    border: 2px solid #00d4ff;
+    background: #1b4332;
+    border: 2px solid #52b788;
     border-radius: 4px;
     z-index: 2000;
     min-width: 150px;
@@ -443,13 +450,13 @@ function closeContextMenu() {
 
 .context-menu-item {
     padding: 0.75rem 1rem;
-    color: #e0e0e0;
+    color: #d8f3dc;
     cursor: pointer;
     transition: background 0.2s;
 }
 
 .context-menu-item:hover {
-    background: rgba(0, 212, 255, 0.2);
+    background: rgba(82, 183, 136, 0.3);
 }
 
 .context-menu-overlay {
