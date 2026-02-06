@@ -77,12 +77,14 @@ async function testFetchCard() {
         <p>Hand: {{ game.hand.length }} cards</p>
         <p>Graveyard: {{ game.graveyard.length }} cards</p>
 
-        <ul>
-            <li v-for="card in game.hand" :key="card.id">
-                {{ card.name }}
-                <button @click="game.discard(card.id)">Discard</button>
-            </li>
-        </ul>
+        <div class="hand">
+            <div v-for="card in game.hand" :key="card.id" class="card">
+                <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                <button @click="game.discard(card.id)" class="discard-btn">Discard</button>
+            </div>
+        </div>
+
+        <p v-if="game.hand.length === 0" class="empty-message">No cards in hand</p>
 
         <!-- Deck Loader modal overlay -->
          <div v-if="showLoadModal" class="modal-overlay" @click="showLoadModal = false">
@@ -122,6 +124,55 @@ async function testFetchCard() {
 
 .modal-content button {
     margin-right: 0.5rem;
+    margin-top: 1rem;
+}
+
+.hand {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.card {
+    position: relative;
+    width: 200px;
+}
+
+.card img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+}
+
+.card img:hover {
+    transform: scale(1.05);
+}
+
+.discard-btn {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: 0.2s;
+}
+
+.card:hover .discard-btn {
+    opacity: 1;
+}
+
+.empty-message {
+    color: #666;
+    font-style: italic;
     margin-top: 1rem;
 }
 </style>
