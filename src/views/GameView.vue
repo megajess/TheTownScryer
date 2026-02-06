@@ -1,19 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
-import type { CardInstance } from '@/types/card'
+import type { CardInstance, ZoneType } from '@/types/card'
 import { fetchCardByName, getImageUrl } from '@/services/scryfall'
 import { getCachedCard, cacheCard } from '@/services/cache'
 
 const game = useGameStore()
 const loading = ref(false)
 const showLoadModal = ref(true)
-
-// const testCards: CardInstance[] = [
-//     { id: '1', cardId: 'sol-ring',      name: 'Sol Ring',      imageUrl: '', zone: 'library', tapped: false, faceDown: false, isCommander: false, isToken: false, counters: [], position: 0, isFlipped: false },
-//     { id: '2', cardId: 'cmd-tower',     name: 'Command Tower', imageUrl: '', zone: 'library', tapped: false, faceDown: false, isCommander: false, isToken: false, counters: [], position: 1, isFlipped: false },
-//     { id: '3', cardId: 'path-to-exile', name: 'Path to Exile', imageUrl: '', zone: 'library', tapped: false, faceDown: false, isCommander: false, isToken: false, counters: [], position: 2, isFlipped: false },
-// ]
+const draggedCardId = ref<string | null>(null)
 
 async function loadTestCards() {
     loading.value = true
@@ -50,7 +45,7 @@ async function loadTestCards() {
         }
     }
 
-    game.library = loadedCards
+    game.loadLibrary(loadedCards)
     game.shuffleLibrary()
     loading.value = false
     showLoadModal.value = false
@@ -64,12 +59,34 @@ async function testFetchCard() {
         console.log('Image URL:', getImageUrl(card))
     }
 }
+
+function handleDragStart(cardId: string) {
+    draggedCardId.value = cardId
+}
+
+function handleDrop(toZone: ZoneType) {
+    if (draggedCardId.value) {
+        const card = game.findCard(draggedCardId.value)
+
+        if (card) {
+            game.moveCard(draggedCardId.value, card.zone, toZone)
+        }
+    }
+}
+
+function handleDragEnd() {
+    draggedCardId.value = null
+}
+
+function handleDragOver(event: DragEvent) {
+    event.preventDefault()
+}
 </script>
 
 <template>
-    <div class="gmae-layout">
+    <div class="game-layout">
         <!-- Battlefield -->
-        <div class="battlefield">
+        <div class="battlefield" @dragover="handleDragOver" @drop="handleDrop('battlefield')">
             <h3>Battlefield</h3>
             <div class="battlefield-cards">
                 <div v-for="card in game.battlefield" :key="card.id" class="card">
@@ -107,7 +124,9 @@ async function testFetchCard() {
         <div class="hand-zone">
             <h3>Hand</h3>
             <div class="hand-cards">
-                <div v-for="card in game.hand" :key="card.id" class="card">
+                <div v-for="card in game.hand" :key="card.id" class="card"
+                    :class="{ dragging: draggedCardId === card.id }" draggable="true"
+                    @dragstart="handleDragStart(card.id)" @dragend="handleDragEnd">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                     <button @click="game.discard(card.id)" class="discard-btn">Discard</button>
                 </div>
@@ -362,5 +381,14 @@ async function testFetchCard() {
 .modal-content button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.card.dragging {
+    opacity: 0.5;
+}
+
+.battlefield.drag-over {
+    border-color: #00ff88;
+    background: linear-gradient(135deg, #1a2a1a 0%, #2a1a2a 100%);
 }
 </style>

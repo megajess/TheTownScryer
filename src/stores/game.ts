@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { CardInstance } from '@/types/card'
+import type { CardInstance, ZoneType } from '@/types/card'
 
 export const useGameStore = defineStore('game', () => {
     const library = ref<CardInstance[]>([])
@@ -49,6 +49,51 @@ export const useGameStore = defineStore('game', () => {
         }
     }
 
+    function loadLibrary(cards: CardInstance[]) {
+        library.value.splice(0, library.value.length, ...cards)
+    }
+
+    function getZoneRef(zone: ZoneType) {
+        const zoneMap = {
+            library,
+            hand,
+            battlefield,
+            commandZone,
+            graveyard,
+            exile,
+            reveal,
+        }
+
+        return zoneMap[zone]
+    }
+
+    function findCard(cardId: string): CardInstance | undefined {
+        const allZones = [library, hand, battlefield, commandZone, graveyard, exile, reveal]
+
+        for (const zone of allZones) {
+            const card = zone.value.find((c) => c.id === cardId)
+
+            if (card) return card
+        }
+
+        return undefined
+    }
+
+    function moveCard(cardId: string, fromZone: ZoneType, toZone: ZoneType) {
+        const fromRef = getZoneRef(fromZone)
+        const toRef = getZoneRef(toZone)
+        const index = fromRef.value.findIndex((c) => c.id === cardId)
+
+        if (index === -1) return
+
+        const card = fromRef.value.splice(index, 1)[0]
+
+        if (card) {
+            card.zone = toZone
+            toRef.value.push(card)
+        }
+    }
+
     return {
         library,
         hand,
@@ -60,5 +105,8 @@ export const useGameStore = defineStore('game', () => {
         draw,
         shuffleLibrary,
         discard,
+        loadLibrary,
+        findCard,
+        moveCard,
     }
 })
