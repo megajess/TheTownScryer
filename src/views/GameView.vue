@@ -12,6 +12,8 @@ const draggedCardId = ref<string | null>(null)
 const contextMenuCard = ref<string | null>(null)
 const contextMenuPosition = ref(({ x: 0, y: 0 }))
 const showContextMenu = ref(false)
+const hoveredCard = ref<CardInstance | null>(null)
+const magnifierPosition = ref({ x: 0, y: 0 })
 
 async function loadTestCards() {
     loading.value = true
@@ -108,6 +110,26 @@ function closeContextMenu() {
     showContextMenu.value = false
     contextMenuCard.value = null
 }
+
+function handleCardHover(card: CardInstance) {
+    hoveredCard.value = card
+}
+
+function handleCardMove(event: MouseEvent, card: CardInstance) {
+    hoveredCard.value = card
+
+    const cardElement = event.currentTarget as HTMLElement
+    const rect = cardElement.getBoundingClientRect()
+
+    const x = (event.clientX - rect.left) / rect.width
+    const y = (event.clientY - rect.top) / rect.height
+
+    magnifierPosition.value = { x, y }
+}
+
+function handleCardLeave() {
+    hoveredCard.value = null
+}
 </script>
 
 <template>
@@ -152,10 +174,20 @@ function closeContextMenu() {
         <!-- Hand -->
         <div class="hand-zone">
             <h3>Hand</h3>
+            <!-- Card Magnifier -->
+            <div v-if="hoveredCard" class="card-magnifier">
+                <div class="magnifier-lens" :style="{
+                    backgroundImage: `url(${hoveredCard.imageUrl})`,
+                    backgroundPosition: `${magnifierPosition.x * 100}% ${magnifierPosition.y * 100}%`,
+                    backgroundSize: '400px auto'
+                }">
+                </div>
+            </div>"
             <div class="hand-cards">
                 <div v-for="card in game.hand" :key="card.id" class="card"
                     :class="{ dragging: draggedCardId === card.id }" draggable="true"
-                    @dragstart="handleDragStart(card.id)" @dragend="handleDragEnd">
+                    @dragstart="handleDragStart(card.id)" @dragend="handleDragEnd" @mouseenter="handleCardHover(card)"
+                    @mousemove="handleCardMove($event, card)" @mouseleave="handleCardLeave">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                     <button @click="game.discard(card.id)" class="discard-btn">Discard</button>
                 </div>
@@ -305,11 +337,12 @@ function closeContextMenu() {
 
 .hand-zone {
     grid-area: hand;
+    position: relative;
     background: linear-gradient(135deg, #0d2818 0%, #1b4332 100%);
     border: 2px solid #74c69d;
     border-radius: 8px;
     padding: 1rem;
-    overflow-x: auto;
+    overflow-x: visible;
 }
 
 .hand-zone h3 {
@@ -321,6 +354,34 @@ function closeContextMenu() {
 .hand-cards {
     display: flex;
     gap: 0.5rem;
+}
+
+.card-magnifier {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 1rem;
+    width: 400px;
+    height: 90%;
+    z-index: 10;
+    pointer-events: none;
+    border: 3px solid #74c69d;
+    border-radius: 12px;
+    overflow: hidden;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.8));
+    background: #000;
+}
+
+.magnifier-lens {
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+}
+
+.card-magnifier img {
+    width: 100%;
+    border-radius: 12px;
+    border: 3px solid #74c69d;
 }
 
 .card {
