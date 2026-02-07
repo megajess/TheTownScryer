@@ -29,14 +29,11 @@ const {
     <div class="game-layout">
         <!-- Battlefield -->
         <div class="battlefield" @dragover="handleDragOver" @drop="handleDrop('battlefield')">
-            <h3>Battlefield</h3>
             <div class="battlefield-cards">
                 <div v-for="card in game.battlefield" :key="card.id" class="card"
                     @contextmenu="handleContextMenu($event, card.id)">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                 </div>
-
-                <p v-if="game.battlefield.length === 0" class="empty">No cards on battlefield</p>
             </div>
         </div>
 
@@ -66,7 +63,6 @@ const {
 
         <!-- Hand -->
         <div class="hand-zone">
-            <h3>Hand</h3>
             <!-- Card Magnifier -->
             <div v-if="hoveredCard && isShiftPressed" class="card-magnifier">
                 <div class="magnifier-lens" :style="{
@@ -84,7 +80,6 @@ const {
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                     <button @click="game.discard(card.id)" class="discard-btn">Discard</button>
                 </div>
-                <p v-if="game.hand.length === 0" class="empty">No cards in hand</p>
             </div>
         </div>
 
