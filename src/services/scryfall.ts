@@ -2,7 +2,7 @@ import type { ScryfallCard } from "@/types/scryfall"
 
 const SCRYFALL_API = 'https://api.scryfall.com'
 
-export const CARD_BACK_URL = 'https://cards.scryfall.io/large/back/0/0/0aeebaf5-8c7d-4636-9e82-8c27447861f7.jpg'
+export const CARD_BACK_URL = 'https://cards.scryfall.io/back.png'
 
 export async function fetchCardByName(name: string): Promise<ScryfallCard | null> {
     try {

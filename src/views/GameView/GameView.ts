@@ -3,6 +3,7 @@ import { useGameStore } from '@/stores/game'
 import type { CardInstance, ZoneType } from '@/types/card'
 import { fetchCardByName, getImageUrl } from '@/services/scryfall'
 import { getCachedCard, cacheCard } from '@/services/cache'
+import { CARD_BACK_URL } from '@/services/scryfall'
 
 export function useGameView() {
     const game = useGameStore()
@@ -155,6 +156,7 @@ export function useGameView() {
     })
 
     return {
+        CARD_BACK_URL,
         game,
         loading,
         showLoadModal,
