@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import type { CardInstance, ZoneType } from '@/types/card'
 import { fetchCardByName, getImageUrl } from '@/services/scryfall'
@@ -14,6 +14,7 @@ export function useGameView() {
     const showContextMenu = ref(false)
     const hoveredCard = ref<CardInstance | null>(null)
     const magnifierPosition = ref({ x: 0, y: 0 })
+    const isShiftPressed = ref(false)
 
     async function loadTestCards() {
         loading.value = true
@@ -131,6 +132,28 @@ export function useGameView() {
         hoveredCard.value = null
     }
 
+    function handleKeyDown(event: KeyboardEvent) {
+        if (event.key === 'Shift') {
+            isShiftPressed.value = true
+        }
+    }
+
+    function handleKeyUp(event: KeyboardEvent) {
+        if (event.key === 'Shift') {
+            isShiftPressed.value = false
+        }
+    }
+
+    onMounted(() => {
+        window.addEventListener('keydown', handleKeyDown)
+        window.addEventListener('keyup', handleKeyUp)
+    })
+
+    onUnmounted(() => {
+        window.removeEventListener('keydown', handleKeyDown)
+        window.removeEventListener('keyup', handleKeyUp)
+    })
+
     return {
         game,
         loading,
@@ -140,6 +163,7 @@ export function useGameView() {
         showContextMenu,
         hoveredCard,
         magnifierPosition,
+        isShiftPressed,
         loadTestCards,
         handleDragStart,
         handleDrop,

@@ -10,6 +10,7 @@ const {
     showContextMenu,
     hoveredCard,
     magnifierPosition,
+    isShiftPressed,
     loadTestCards,
     handleDragStart,
     handleDrop,
@@ -67,7 +68,7 @@ const {
         <div class="hand-zone">
             <h3>Hand</h3>
             <!-- Card Magnifier -->
-            <div v-if="hoveredCard" class="card-magnifier">
+            <div v-if="hoveredCard && isShiftPressed" class="card-magnifier">
                 <div class="magnifier-lens" :style="{
                     backgroundImage: `url(${hoveredCard.imageUrl})`,
                     backgroundPosition: `${magnifierPosition.x * 100}% ${magnifierPosition.y * 100}%`,
