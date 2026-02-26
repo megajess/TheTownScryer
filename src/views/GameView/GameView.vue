@@ -12,6 +12,10 @@ const {
     hoveredCard,
     magnifierPosition,
     isShiftPressed,
+    zoomLevel,
+    panX,
+    panY,
+    canvasSize,
     loadTestCards,
     handleDragStart,
     handleDrop,
@@ -22,15 +26,22 @@ const {
     closeContextMenu,
     handleCardHover,
     handleCardMove,
-    handleCardLeave
+    handleCardLeave,
+    handleWheel,
+    handlePanStart,
+    handlePanMove,
+    handlePanEnd
 } = useGameView()
 </script>
 
 <template>
     <div class="game-layout">
         <!-- Battlefield -->
-        <div class="battlefield">
-            <div class="battlefield-cards" @dragover="handleDragOver" @drop="handleDrop($event, 'battlefield')">
+        <div class="battlefield" @wheel.prevent="handleWheel" @mousemove="handlePanMove" @mouseup="handlePanEnd"
+            @mouseleave="handlePanEnd">
+            <div class="battlefield-cards" @dragover="handleDragOver" @drop="handleDrop($event, 'battlefield')"
+                :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`, transformOrigin: '0 0', width: canvasSize, height: canvasSize }"
+                @mousedown.self="handlePanStart">
                 <div v-for="card in game.battlefield" :key="card.id" class="card battlefield-card"
                     :style="{ left: card.x + 'px', top: card.y + 'px' }" draggable="true"
                     @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
