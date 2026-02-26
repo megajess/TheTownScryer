@@ -29,9 +29,11 @@ const {
 <template>
     <div class="game-layout">
         <!-- Battlefield -->
-        <div class="battlefield" @dragover="handleDragOver" @drop="handleDrop('battlefield')">
-            <div class="battlefield-cards">
-                <div v-for="card in game.battlefield" :key="card.id" class="card"
+        <div class="battlefield">
+            <div class="battlefield-cards" @dragover="handleDragOver" @drop="handleDrop($event, 'battlefield')">
+                <div v-for="card in game.battlefield" :key="card.id" class="card battlefield-card"
+                    :style="{ left: card.x + 'px', top: card.y + 'px' }" draggable="true"
+                    @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @contextmenu="handleContextMenu($event, card.id)">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                 </div>
@@ -53,7 +55,8 @@ const {
                     <span class="overlay-zone-label">Library</span>
                 </div>
 
-                <div class="overlay-zone graveyard-zone">
+                <div class="overlay-zone graveyard-zone" @dragover="handleDragOver"
+                    @drop="handleDrop($event, 'graveyard')">
                     <svg v-if="game.graveyard.length === 0" class="zone-card-back" viewBox="0 0 100 140"
                         xmlns="http://www.w3.org/2000/svg">
                         <path d="M 50 20 Q 30 20 30 40 L 30 100 L 70 100 L 70 40 Q 70 20 50 20 Z" fill="#95d5b2" />
@@ -105,8 +108,9 @@ const {
             <div class="hand-cards">
                 <div v-for="card in game.hand" :key="card.id" class="card"
                     :class="{ dragging: draggedCardId === card.id }" draggable="true"
-                    @dragstart="handleDragStart(card.id)" @dragend="handleDragEnd" @mouseenter="handleCardHover(card)"
-                    @mousemove="handleCardMove($event, card)" @mouseleave="handleCardLeave">
+                    @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
+                    @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
+                    @mouseleave="handleCardLeave">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                     <button @click="game.discard(card.id)" class="discard-btn">Discard</button>
                 </div>

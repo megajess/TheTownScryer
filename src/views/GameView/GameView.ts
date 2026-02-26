@@ -10,6 +10,7 @@ export function useGameView() {
     const loading = ref(false)
     const showLoadModal = ref(true)
     const draggedCardId = ref<string | null>(null)
+    const dragGrabOffset = ref({ x: 0, y: 0 })
     const contextMenuCard = ref<string | null>(null)
     const contextMenuPosition = ref(({ x: 0, y: 0 }))
     const showContextMenu = ref(false)
@@ -45,7 +46,6 @@ export function useGameView() {
                     isCommander: false,
                     isToken: false,
                     counters: [],
-                    position: loadedCards.length,
                     isFlipped: false,
                 }
                 loadedCards.push(cardInstance)
@@ -67,18 +67,47 @@ export function useGameView() {
         }
     }
 
-    function handleDragStart(cardId: string) {
+    function handleDragStart(event: DragEvent, cardId: string) {
         draggedCardId.value = cardId
+
+        const target = event.currentTarget as HTMLElement
+        const rect = target.getBoundingClientRect()
+
+        dragGrabOffset.value = {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        }
+
+        event.dataTransfer?.setDragImage(target, dragGrabOffset.value.x, dragGrabOffset.value.y)
     }
 
-    function handleDrop(toZone: ZoneType) {
+    function handleDrop(event: DragEvent, toZone: ZoneType) {
         if (draggedCardId.value) {
             const card = game.findCard(draggedCardId.value)
 
             if (card) {
-                game.moveCard(draggedCardId.value, card.zone, toZone)
+                const target = event.currentTarget as HTMLElement
+                const rect = target.getBoundingClientRect()
+                const x = Math.max(0, event.clientX - rect.left - dragGrabOffset.value.x)
+                const y = Math.max(0, event.clientY - rect.top - dragGrabOffset.value.y)
+
+                console.log({
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    rectLeft: rect.left,
+                    rectTop: rect.top,
+                    rectHeight: rect.height,
+                    grabOffsetX: dragGrabOffset.value.x,
+                    grabOffsetY: dragGrabOffset.value.y,
+                    finalX: x,
+                    finalY: y
+                })
+
+                game.moveCard(draggedCardId.value, card.zone, toZone, x, y)
             }
         }
+
+        draggedCardId.value = null
     }
 
     function handleDragEnd() {

@@ -79,7 +79,7 @@ export const useGameStore = defineStore('game', () => {
         return undefined
     }
 
-    function moveCard(cardId: string, fromZone: ZoneType, toZone: ZoneType) {
+    function moveCard(cardId: string, fromZone: ZoneType, toZone: ZoneType, x?: number, y?: number) {
         const fromRef = getZoneRef(fromZone)
         const toRef = getZoneRef(toZone)
         const index = fromRef.value.findIndex((c) => c.id === cardId)
@@ -90,6 +90,10 @@ export const useGameStore = defineStore('game', () => {
 
         if (card) {
             card.zone = toZone
+
+            if (x !== undefined) card.x = x
+            if (y !== undefined) card.y = y
+
             toRef.value.push(card)
         }
     }

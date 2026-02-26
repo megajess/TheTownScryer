@@ -1,11 +1,11 @@
-export type ZoneType = 
-| 'library'
-| 'hand'
-| 'battlefield'
-| 'commandZone'
-| 'graveyard'
-| 'exile'
-| 'reveal'
+export type ZoneType =
+    | 'library'
+    | 'hand'
+    | 'battlefield'
+    | 'commandZone'
+    | 'graveyard'
+    | 'exile'
+    | 'reveal'
 
 export type CounterType = 'plusOne' | 'minusOne' | 'loyalty' | 'generic'
 
@@ -27,6 +27,7 @@ export interface CardInstance {
     isCommander: boolean
     isToken: boolean
     counters: Counter[]
-    position: number
+    x?: number
+    y?: number
     isFlipped: boolean
 }
