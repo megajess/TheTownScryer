@@ -456,3 +456,9 @@
     height: 100%;
     z-index: 99;
 }
+
+.menu-option--info {
+    cursor: default;
+    color: #52b788;
+    font-size: 0.8rem;
+}

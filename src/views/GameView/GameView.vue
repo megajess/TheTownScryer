@@ -25,6 +25,8 @@ const {
     battlefieldRef,
     openMenu,
     isZoneCollapsed,
+    viewportWidth,
+    battlefieldHeight,
     loadTestCards,
     handleDragStart,
     handleDrop,
@@ -65,6 +67,9 @@ const {
                 </div>
             </div>
 
+            <div class="menu-option menu-option--info">
+                Screen: {{ viewportWidth }} × {{ battlefieldHeight }}
+            </div>
         </div>
         <div v-if="openMenu" class="menu-overlay" @click="openMenu = null"></div>
 
@@ -123,7 +128,7 @@ const {
                         <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
                             class="zone-card-back" />
                         <span v-if="game.graveyard.length > 0" class="overlay-zone-count">{{ game.graveyard.length
-                        }}</span>
+                            }}</span>
                         <span class="overlay-zone-label">Graveyard</span>
                     </div>
 

@@ -28,6 +28,26 @@ export function useGameView() {
     const canvasSize = `${CANVAS_MULTIPLIER * 100}%`
     const openMenu = ref<string | null>(null)
     const isZoneCollapsed = ref(false)
+    const viewportWidth = ref(window.innerWidth)
+    const battlefieldHeight = ref(0)
+
+    onMounted(async () => {
+        window.addEventListener('keydown', handleKeyDown)
+        window.addEventListener('keyup', handleKeyUp)
+
+        await nextTick()
+
+        resetView()
+
+        window.addEventListener('resize', updateDimensions)
+        updateDimensions()
+    })
+
+    onUnmounted(() => {
+        window.removeEventListener('keydown', handleKeyDown)
+        window.removeEventListener('keyup', handleKeyUp)
+        window.removeEventListener('resize', updateDimensions)
+    })
 
     async function loadTestCards(numberOfCommanders: number) {
         loading.value = true
@@ -108,6 +128,14 @@ export function useGameView() {
         if (card) {
             console.log('Fetched card:', card)
             console.log('Image URL:', getImageUrl(card))
+        }
+    }
+
+    function updateDimensions() {
+        viewportWidth.value = window.innerWidth
+
+        if (battlefieldRef.value) {
+            battlefieldHeight.value = battlefieldRef.value.offsetHeight
         }
     }
 
@@ -304,20 +332,6 @@ export function useGameView() {
         }
     }
 
-    onMounted(async () => {
-        window.addEventListener('keydown', handleKeyDown)
-        window.addEventListener('keyup', handleKeyUp)
-
-        await nextTick()
-
-        resetView()
-    })
-
-    onUnmounted(() => {
-        window.removeEventListener('keydown', handleKeyDown)
-        window.removeEventListener('keyup', handleKeyUp)
-    })
-
     return {
         CARD_BACK_URL,
         game,
@@ -336,6 +350,8 @@ export function useGameView() {
         battlefieldRef,
         openMenu,
         isZoneCollapsed,
+        viewportWidth,
+        battlefieldHeight,
         loadTestCards,
         handleDragStart,
         handleDrop,
