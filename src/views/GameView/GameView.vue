@@ -6,6 +6,9 @@ import GraveyardIcon from '@/components/GraveyardIcon.vue';
 import ExileIcon from '@/components/ExileIcon.vue';
 import CollapseIcon from '@/components/CollapseIcon.vue';
 import ExpandIcon from '@/components/ExpandIcon.vue';
+import GitHubIcon from '@/components/GitHubIcon.vue'
+import ExternalLinkIcon from '@/components/ExternalLinkIcon.vue'
+
 
 const {
     CARD_BACK_URL,
@@ -65,6 +68,17 @@ const {
                 About
                 <div v-if="openMenu === 'about'" class="menu-dropdown">
                     <div class="menu-option">Instructions</div>
+                    <a class="menu-option menu-option--link" href="https://github.com/megajess/TheTownScryer"
+                        target="_blank" rel="noopener noreferrer" @click.stop="openMenu = null">
+                        <GitHubIcon class="menu-link-icon" />
+                        <span>Source Code</span>
+                        <ExternalLinkIcon class="menu-link-external" />
+                    </a>
+                    <a class="menu-option menu-option--link" href="/license.html" target="_blank"
+                        @click.stop="openMenu = null">
+                        <span>License</span>
+                        <ExternalLinkIcon class="menu-link-external" />
+                    </a>
                 </div>
             </div>
 
