@@ -149,8 +149,11 @@ const {
                 <h2>Load Deck</h2>
                 <p v-if="loading">Loading cards...</p>
                 <p v-else>Load test cards to start the game</p>
-                <button @click="loadTestCards" :disabled="loading">
-                    {{ loading ? 'Loading...' : 'Load Test Cards' }}
+                <button class="load-button" @click="loadTestCards(1)" :disabled="loading">
+                    {{ loading ? 'Loading...' : 'Load Test Cards w/1 Commander' }}
+                </button>
+                <button class="load-button" @click="loadTestCards(2)" :disabled="loading">
+                    {{ loading ? 'Loading...' : 'Load Test Cards w/2 Commanders' }}
                 </button>
                 <button @click="showLoadModal = false">Cancel</button>
             </div>

@@ -27,11 +27,19 @@ export function useGameView() {
     const panStart = ref({ x: 0, y: 0 })
     const canvasSize = `${CANVAS_MULTIPLIER * 100}%`
 
-    async function loadTestCards() {
+    async function loadTestCards(numberOfCommanders: number) {
         loading.value = true
-        const cardNames = ['Sol Ring', 'Command Tower', 'Path to Exile', 'The First Sliver', 'Cultist of the Absolute']
+        const cardNames = ['Sol Ring', 'Command Tower', 'Path to Exile']
         const loadedCards: CardInstance[] = []
         const loadedCommanderCards: CardInstance[] = []
+
+        if (numberOfCommanders > 0) {
+            cardNames.push('The First Sliver')
+
+            if (numberOfCommanders === 2) {
+                cardNames.push('Cultist of the Absolute')
+            }
+        }
 
         for (const name of cardNames) {
             let scryfallCard = await getCachedCard(name)

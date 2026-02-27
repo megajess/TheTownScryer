@@ -230,12 +230,12 @@
     transition: all 0.2s;
 }
 
-.modal-content button:first-of-type {
+.load-button {
     background: #52b788;
     color: #081c15;
 }
 
-.modal-content button:first-of-type:hover {
+.load-button:hover {
     background: #74c69d;
 }
 
