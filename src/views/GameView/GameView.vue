@@ -83,7 +83,7 @@ const {
             </div>
 
             <div class="menu-option menu-option--info">
-                Screen: {{ viewportWidth }} × {{ battlefieldHeight }}
+                Broadcast Area: {{ viewportWidth }} × {{ battlefieldHeight }}
             </div>
         </div>
         <div v-if="openMenu" class="menu-overlay" @click="openMenu = null"></div>
