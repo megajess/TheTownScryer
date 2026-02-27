@@ -328,6 +328,32 @@
     border-radius: 4px;
 }
 
+.overlay-zones {
+    flex-direction: column;
+}
+
+.zones-toggle-btn {
+    background: #081c15;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+}
+
+.overlay-zones:not(.is-collapsed) .zones-toggle-btn {
+    position: absolute;
+    top: -12px;
+    left: -10px;    
+}
+
+
+.zones-content {
+    display: flex;
+    gap: 1rem;
+}
+
 .overlay-zone-count {
     position: absolute;
     top: 0.5rem;

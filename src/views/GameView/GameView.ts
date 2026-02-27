@@ -27,6 +27,7 @@ export function useGameView() {
     const panStart = ref({ x: 0, y: 0 })
     const canvasSize = `${CANVAS_MULTIPLIER * 100}%`
     const openMenu = ref<string | null>(null)
+    const isZoneCollapsed = ref(false)
 
     async function loadTestCards(numberOfCommanders: number) {
         loading.value = true
@@ -334,6 +335,7 @@ export function useGameView() {
         canvasSize,
         battlefieldRef,
         openMenu,
+        isZoneCollapsed,
         loadTestCards,
         handleDragStart,
         handleDrop,

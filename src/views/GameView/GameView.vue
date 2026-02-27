@@ -4,6 +4,8 @@ import CommanderIcon from '@/components/CommanderIcon.vue';
 import LibraryIcon from '@/components/LibraryIcon.vue';
 import GraveyardIcon from '@/components/GraveyardIcon.vue';
 import ExileIcon from '@/components/ExileIcon.vue';
+import CollapseIcon from '@/components/CollapseIcon.vue';
+import ExpandIcon from '@/components/ExpandIcon.vue';
 
 const {
     CARD_BACK_URL,
@@ -22,6 +24,7 @@ const {
     canvasSize,
     battlefieldRef,
     openMenu,
+    isZoneCollapsed,
     loadTestCards,
     handleDragStart,
     handleDrop,
@@ -79,50 +82,58 @@ const {
                 </div>
             </div>
 
-            <!-- Utility Zones -->
-            <div class="overlay-zones">
-                <div class="command-zone-group">
-                    <div v-if="game.commanders.length === 0" class="overlay-zone command-zone">
-                        <CommanderIcon class="zone-card-back" />
-                        <span class="overlay-zone-label">Command Zone</span>
+            <!-- Overlay Zones -->
+            <div class="overlay-zones" :class="{ 'is-collapsed': isZoneCollapsed }">
+                <button class="zones-toggle-btn" @click="isZoneCollapsed = !isZoneCollapsed">
+                    <CollapseIcon v-if="!isZoneCollapsed" />
+                    <ExpandIcon v-else />
+                </button>
+
+                <div v-show="!isZoneCollapsed" class="zones-content">
+                    <div class="command-zone-group">
+                        <div v-if="game.commanders.length === 0" class="overlay-zone command-zone">
+                            <CommanderIcon class="zone-card-back" />
+                            <span class="overlay-zone-label">Command Zone</span>
+                        </div>
+
+                        <div v-for="commander in game.commanders" :key="commander.id" class="overlay-zone command-zone"
+                            :draggable="game.commandZone.length > 0"
+                            @dragstart="commander && handleDragStart($event, commander.id)" @dragend="handleDragEnd"
+                            @dragover="handleDragOver" @drop="handleDrop($event, 'commandZone')">
+                            <CommanderIcon v-if="commander.zone !== 'commandZone'" class="zone-card-back" />
+                            <img v-else :src="commander.imageUrl" alt="Command Zone" class="zone-card-back" />
+                            <span v-if="commander.castCount && commander.castCount > 0" class="overlay-zone-count"
+                                title="Times cast from command zone">{{
+                                    commander.castCount
+                                }}</span>
+                            <span class="overlay-zone-label">{{ commander.name }}</span>
+                        </div>
                     </div>
 
-                    <div v-for="commander in game.commanders" :key="commander.id" class="overlay-zone command-zone"
-                        :draggable="game.commandZone.length > 0"
-                        @dragstart="commander && handleDragStart($event, commander.id)" @dragend="handleDragEnd"
-                        @dragover="handleDragOver" @drop="handleDrop($event, 'commandZone')">
-                        <CommanderIcon v-if="commander.zone !== 'commandZone'" class="zone-card-back" />
-                        <img v-else :src="commander.imageUrl" alt="Command Zone" class="zone-card-back" />
-                        <span v-if="commander.castCount && commander.castCount > 0" class="overlay-zone-count"
-                            title="Times cast from command zone">{{
-                                commander.castCount
-                            }}</span>
-                        <span class="overlay-zone-label">{{ commander.name }}</span>
+                    <div class="overlay-zone library-zone">
+                        <LibraryIcon v-if="game.library.length === 0" class="zone-card-back" />
+                        <img v-else :src="CARD_BACK_URL" alt="Library" class="zone-card-back" />
+                        <span v-if="game.library.length > 0" class="overlay-zone-count">{{ game.library.length }}</span>
+                        <span class="overlay-zone-label">Library</span>
                     </div>
-                </div>
 
-                <div class="overlay-zone library-zone">
-                    <LibraryIcon v-if="game.library.length === 0" class="zone-card-back" />
-                    <img v-else :src="CARD_BACK_URL" alt="Library" class="zone-card-back" />
-                    <span v-if="game.library.length > 0" class="overlay-zone-count">{{ game.library.length }}</span>
-                    <span class="overlay-zone-label">Library</span>
-                </div>
+                    <div class="overlay-zone graveyard-zone" @dragover="handleDragOver"
+                        @drop="handleDrop($event, 'graveyard')">
+                        <GraveyardIcon v-if="game.graveyard.length === 0" class="zone-card-back" />
+                        <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
+                            class="zone-card-back" />
+                        <span v-if="game.graveyard.length > 0" class="overlay-zone-count">{{ game.graveyard.length
+                        }}</span>
+                        <span class="overlay-zone-label">Graveyard</span>
+                    </div>
 
-                <div class="overlay-zone graveyard-zone" @dragover="handleDragOver"
-                    @drop="handleDrop($event, 'graveyard')">
-                    <GraveyardIcon v-if="game.graveyard.length === 0" class="zone-card-back" />
-                    <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
-                        class="zone-card-back" />
-                    <span v-if="game.graveyard.length > 0" class="overlay-zone-count">{{ game.graveyard.length }}</span>
-                    <span class="overlay-zone-label">Graveyard</span>
-                </div>
-
-                <div class="overlay-zone exile-zone" @dragover="handleDragOver" @drop="handleDrop($event, 'exile')">
-                    <ExileIcon v-if="game.exile.length === 0" class="zone-card-back" />
-                    <img v-else :src="game.exile[game.exile.length - 1]?.imageUrl" alt="Top of exile"
-                        class="zone-card-back" />
-                    <span v-if="game.exile.length > 0" class="overlay-zone-count">{{ game.exile.length }}</span>
-                    <span class="overlay-zone-label">Exile</span>
+                    <div class="overlay-zone exile-zone" @dragover="handleDragOver" @drop="handleDrop($event, 'exile')">
+                        <ExileIcon v-if="game.exile.length === 0" class="zone-card-back" />
+                        <img v-else :src="game.exile[game.exile.length - 1]?.imageUrl" alt="Top of exile"
+                            class="zone-card-back" />
+                        <span v-if="game.exile.length > 0" class="overlay-zone-count">{{ game.exile.length }}</span>
+                        <span class="overlay-zone-label">Exile</span>
+                    </div>
                 </div>
             </div>
         </div>
