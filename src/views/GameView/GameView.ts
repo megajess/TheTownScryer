@@ -26,6 +26,7 @@ export function useGameView() {
     const isPanning = ref(false)
     const panStart = ref({ x: 0, y: 0 })
     const canvasSize = `${CANVAS_MULTIPLIER * 100}%`
+    const openMenu = ref<string | null>(null)
 
     async function loadTestCards(numberOfCommanders: number) {
         loading.value = true
@@ -107,6 +108,10 @@ export function useGameView() {
             console.log('Fetched card:', card)
             console.log('Image URL:', getImageUrl(card))
         }
+    }
+
+    function toggleMenu(name: string) {
+        openMenu.value = openMenu.value === name ? null : name
     }
 
     function handleWheel(event: WheelEvent) {
@@ -328,6 +333,7 @@ export function useGameView() {
         panY,
         canvasSize,
         battlefieldRef,
+        openMenu,
         loadTestCards,
         handleDragStart,
         handleDrop,
@@ -343,6 +349,7 @@ export function useGameView() {
         handlePanStart,
         handlePanMove,
         handlePanEnd,
-        resetView
+        resetView,
+        toggleMenu
     }
 }

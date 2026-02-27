@@ -21,6 +21,7 @@ const {
     panY,
     canvasSize,
     battlefieldRef,
+    openMenu,
     loadTestCards,
     handleDragStart,
     handleDrop,
@@ -36,12 +37,34 @@ const {
     handlePanStart,
     handlePanMove,
     handlePanEnd,
-    resetView
+    resetView,
+    toggleMenu
 } = useGameView()
 </script>
 
 <template>
     <div class="game-layout">
+        <!-- Menu -->
+        <div class="menu-bar">
+            <div class="menu-item" @click.stop="toggleMenu('game')">
+                Game
+                <div v-if="openMenu === 'game'" class="menu-dropdown">
+                    <div class="menu-option" @click.stop="game.draw(); openMenu = null">Draw</div>
+                    <div class="menu-option" @click.stop="showLoadModal = true; openMenu = null">Load Deck</div>
+                    <div class="menu-option" @click.stop="resetView(); openMenu = null">Reset View</div>
+                </div>
+            </div>
+
+            <div class="menu-item" @click.stop="toggleMenu('about')">
+                About
+                <div v-if="openMenu === 'about'" class="menu-dropdown">
+                    <div class="menu-option">Instructions</div>
+                </div>
+            </div>
+
+        </div>
+        <div v-if="openMenu" class="menu-overlay" @click="openMenu = null"></div>
+
         <!-- Battlefield -->
         <div class="battlefield" ref="battlefieldRef" @wheel.prevent="handleWheel" @mousemove="handlePanMove"
             @mouseup="handlePanEnd" @mouseleave="handlePanEnd">
@@ -102,31 +125,6 @@ const {
                     <span class="overlay-zone-label">Exile</span>
                 </div>
             </div>
-        </div>
-
-        <!-- Dev Utility Zones (stacked in corner) -->
-        <div class="utility-zones">
-            <div class="zone-stack">
-                <div class="mini-zone">
-                    <span class="zone-label">Command Zone</span>
-                    <span class="zone-count">{{ game.commandZone.length }}</span>
-                </div>
-                <div class="mini-zone">
-                    <span class="zone-label">Library</span>
-                    <span class="zone-count">{{ game.library.length }}</span>
-                </div>
-                <div class="mini-zone">
-                    <span class="zone-label">Graveyard</span>
-                    <span class="zone-count">{{ game.graveyard.length }}</span>
-                </div>
-                <div class="mini-zone">
-                    <span class="zone-label">Exile</span>
-                    <span class="zone-count">{{ game.exile.length }}</span>
-                </div>
-            </div>
-            <button @click="game.draw()" class="action-btn">Draw</button>
-            <button @click="showLoadModal = true" class="action-btn">Load Deck</button>
-            <button @click="resetView" class="action-btn">Reset View</button>
         </div>
 
         <!-- Hand -->

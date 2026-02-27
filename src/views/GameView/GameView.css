@@ -7,11 +7,12 @@
 .game-layout {
     display: grid;
     grid-template-areas:
-        'battlefield battlefield battlefield utility'
-        'battlefield battlefield battlefield utility'
-        'hand hand hand hand';
-    grid-template-columns: 1fr 1fr 1fr 200px;
-    grid-template-rows: 1fr 1fr auto;
+        'menu menu menu'
+        'battlefield battlefield battlefield'
+        'battlefield battlefield battlefield'
+        'hand hand hand';
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto 1fr 1fr auto;
     gap: 1rem;
     padding: 1rem;
     background: #081c15;
@@ -305,7 +306,6 @@
     border-radius: 8px;
     padding: 1rem;
     border: 2px solid #74c69d;
-    /* border: 2px solid rgba(82, 183, 136, 0.5); */
 }
 
 .overlay-zone {
@@ -373,4 +373,60 @@
     border-radius: 6px;
     padding: 0.5rem;
     cursor: pointer;
+}
+
+/* Menu Bar */
+.menu-bar {
+    grid-area: menu;
+    display: flex;
+    background: rgba(10, 30, 20, 0.95);
+    border-bottom: 1px solid #52b788;
+    padding: 0 0.5rem;
+    z-index: 100;
+    position: relative;
+}
+
+.menu-item {
+    position: relative;
+    padding: 0.4rem 0.75rem;
+    color: #95d5b2;
+    cursor: pointer;
+    font-size: 0.85rem;
+    user-select: none;
+}
+
+.menu-item:hover {
+    background: rgba(82, 183, 136, 0.15);
+}
+
+.menu-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(10, 30, 20, 0.98);
+    border: 1px solid #52b788;
+    border-radius: 4px;
+    min-width: 140px;
+    z-index: 200;
+}
+
+.menu-option {
+    padding: 0.5rem 1rem;
+    color: #95d5b2;
+    cursor: pointer;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.menu-option:hover {
+    background: rgba(82, 183, 136, 0.2);
+}
+
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99;
 }
