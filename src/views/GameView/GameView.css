@@ -314,6 +314,10 @@
     padding: 0.5rem;
     cursor: pointer;
     transition: transform 0.2s, border-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .zone-card-back {
@@ -340,4 +344,30 @@
     color: #b7e4c7;
     font-size: 0.8rem;
     margin-top: 0.25rem;
+}
+
+.cast-count {
+    display: block;
+    text-align: center;
+    color: #b7e4c7;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.command-zone-group {
+    display: flex;
+    gap: 0.5rem;
+    border: 2px solid #52b788;
+    border-radius: 8px;
+    background: rgba(27, 67, 50, 0.9);
+    padding: 0.5rem;
+}
+
+.command-zone {
+    position: relative;
+    width: 100px;
+    border: 1px dashed rgba(82, 183, 136, 0.4);
+    border-radius: 6px;
+    padding: 0.5rem;
+    cursor: pointer;
 }

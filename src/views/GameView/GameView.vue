@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { useGameView } from './GameView';
+import CommanderIcon from '@/components/CommanderIcon.vue';
+import LibraryIcon from '@/components/LibraryIcon.vue';
+import GraveyardIcon from '@/components/GraveyardIcon.vue';
 
 const {
     CARD_BACK_URL,
@@ -54,15 +57,28 @@ const {
 
             <!-- Utility Zones -->
             <div class="overlay-zones">
+                <div class="command-zone-group">
+                    <div v-if="game.commanders.length === 0" class="overlay-zone command-zone">
+                        <CommanderIcon class="zone-card-back" />
+                        <span class="overlay-zone-label">Command Zone</span>
+                    </div>
+
+                    <div v-for="commander in game.commanders" :key="commander.id" class="overlay-zone command-zone"
+                        :draggable="game.commandZone.length > 0"
+                        @dragstart="commander && handleDragStart($event, commander.id)" @dragend="handleDragEnd"
+                        @dragover="handleDragOver" @drop="handleDrop($event, 'commandZone')">
+                        <CommanderIcon v-if="commander.zone !== 'commandZone'" class="zone-card-back" />
+                        <img v-else :src="commander.imageUrl" alt="Command Zone" class="zone-card-back" />
+                        <span v-if="commander.castCount && commander.castCount > 0" class="overlay-zone-count"
+                            title="Times cast from command zone">{{
+                                commander.castCount
+                            }}</span>
+                        <span class="overlay-zone-label">{{ commander.name }}</span>
+                    </div>
+                </div>
+
                 <div class="overlay-zone library-zone">
-                    <svg v-if="game.library.length === 0" class="zone-card-back" viewbox="0 0 100 140"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <rect x="20" y="30" width="60" height="80" fill="#95d5b2" rx="4" />
-                        <rect x="25" y="35" width="50" height="70" fill="none" stroke="#1b4332" stroke-width="2" />
-                        <line x1="30" y1="45" x2="70" y2="45" stroke="#1b4332" stroke-width="1.5" />
-                        <line x1="30" y1="55" x2="70" y2="55" stroke="#1b4332" stroke-width="1.5" />
-                        <line x1="30" y1="65" x2="70" y2="65" stroke="#1b4332" stroke-width="1.5" />
-                    </svg>
+                    <LibraryIcon v-if="game.library.length === 0" class="zone-card-back" />
                     <img v-else :src="CARD_BACK_URL" alt="Library" class="zone-card-back" />
                     <span v-if="game.library.length > 0" class="overlay-zone-count">{{ game.library.length }}</span>
                     <span class="overlay-zone-label">Library</span>
@@ -70,11 +86,7 @@ const {
 
                 <div class="overlay-zone graveyard-zone" @dragover="handleDragOver"
                     @drop="handleDrop($event, 'graveyard')">
-                    <svg v-if="game.graveyard.length === 0" class="zone-card-back" viewBox="0 0 100 140"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="M 50 20 Q 30 20 30 40 L 30 100 L 70 100 L 70 40 Q 70 20 50 20 Z" fill="#95d5b2" />
-                        <text x="50" y="75" text-anchor="middle" fill="#1b4332" font-size="24">RIP</text>
-                    </svg>
+                    <GraveyardIcon v-if="game.graveyard.length === 0" class="zone-card-back" />
                     <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
                         class="zone-card-back" />
                     <span v-if="game.graveyard.length > 0" class="overlay-zone-count">{{ game.graveyard.length }}</span>

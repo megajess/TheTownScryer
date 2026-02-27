@@ -24,7 +24,8 @@ export interface CardInstance {
     zone: ZoneType
     tapped: boolean
     faceDown: boolean
-    isCommander: boolean
+    startsInCommandZone: boolean
+    castCount?: number
     isToken: boolean
     counters: Counter[]
     x?: number

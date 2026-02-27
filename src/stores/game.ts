@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { CardInstance, ZoneType } from '@/types/card'
 
@@ -10,6 +10,13 @@ export const useGameStore = defineStore('game', () => {
     const graveyard = ref<CardInstance[]>([])
     const exile = ref<CardInstance[]>([])
     const reveal = ref<CardInstance[]>([])
+    const commanderIds = ref<string[]>([])
+
+    const commanders = computed(() =>
+        commanderIds.value
+            .map(id => findCard(id))
+            .filter((c): c is CardInstance => c !== undefined)
+    )
 
     function draw(count: number = 1) {
         for (let i = 0; i < count; i++) {
@@ -51,6 +58,11 @@ export const useGameStore = defineStore('game', () => {
 
     function loadLibrary(cards: CardInstance[]) {
         library.value.splice(0, library.value.length, ...cards)
+    }
+
+    function loadCommandZone(cards: CardInstance[]) {
+        commandZone.value.splice(0, commandZone.value.length, ...cards)
+        commanderIds.value = cards.map(c => c.id)
     }
 
     function getZoneRef(zone: ZoneType) {
@@ -106,10 +118,12 @@ export const useGameStore = defineStore('game', () => {
         graveyard,
         exile,
         reveal,
+        commanders,
         draw,
         shuffleLibrary,
         discard,
         loadLibrary,
+        loadCommandZone,
         findCard,
         moveCard,
     }

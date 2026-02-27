@@ -29,8 +29,9 @@ export function useGameView() {
 
     async function loadTestCards() {
         loading.value = true
-        const cardNames = ['Sol Ring', 'Command Tower', 'Path to Exile']
+        const cardNames = ['Sol Ring', 'Command Tower', 'Path to Exile', 'The First Sliver', 'Cultist of the Absolute']
         const loadedCards: CardInstance[] = []
+        const loadedCommanderCards: CardInstance[] = []
 
         for (const name of cardNames) {
             let scryfallCard = await getCachedCard(name)
@@ -44,24 +45,44 @@ export function useGameView() {
             }
 
             if (scryfallCard) {
-                const cardInstance: CardInstance = {
-                    id: crypto.randomUUID(),
-                    cardId: scryfallCard.id,
-                    name: scryfallCard.name,
-                    imageUrl: getImageUrl(scryfallCard),
-                    zone: 'library',
-                    tapped: false,
-                    faceDown: false,
-                    isCommander: false,
-                    isToken: false,
-                    counters: [],
-                    isFlipped: false,
+                if (scryfallCard.name != 'The First Sliver' && scryfallCard.name != 'Cultist of the Absolute') {
+                    const cardInstance: CardInstance = {
+                        id: crypto.randomUUID(),
+                        cardId: scryfallCard.id,
+                        name: scryfallCard.name,
+                        imageUrl: getImageUrl(scryfallCard),
+                        zone: 'library',
+                        tapped: false,
+                        faceDown: false,
+                        startsInCommandZone: false,
+                        isToken: false,
+                        counters: [],
+                        isFlipped: false,
+                    }
+
+                    loadedCards.push(cardInstance)
+                } else {
+                    const commanderCardInstance: CardInstance = {
+                        id: crypto.randomUUID(),
+                        cardId: scryfallCard.id,
+                        name: scryfallCard.name,
+                        imageUrl: getImageUrl(scryfallCard),
+                        zone: 'commandZone',
+                        tapped: false,
+                        faceDown: false,
+                        startsInCommandZone: true,
+                        isToken: false,
+                        counters: [],
+                        isFlipped: false,
+                    }
+
+                    loadedCommanderCards.push(commanderCardInstance)
                 }
-                loadedCards.push(cardInstance)
             }
         }
 
         game.loadLibrary(loadedCards)
+        game.loadCommandZone(loadedCommanderCards)
         game.shuffleLibrary()
         loading.value = false
         showLoadModal.value = false
@@ -164,6 +185,12 @@ export function useGameView() {
             const card = game.findCard(draggedCardId.value)
 
             if (card) {
+                if (toZone === 'commandZone' && !card.startsInCommandZone) return
+
+                if (card.zone === 'commandZone' && toZone === 'battlefield') {
+                    card.castCount = (card.castCount ?? 0) + 1
+                }
+
                 const target = event.currentTarget as HTMLElement
                 const rect = target.getBoundingClientRect()
                 const x = Math.max(0, (event.clientX - rect.left - dragGrabOffset.value.x) / zoomLevel.value)
