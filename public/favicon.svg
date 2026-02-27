@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Background -->
+  <rect width="32" height="32" rx="5" fill="#1b4332"/>
+
+  <!-- Color wheel lines (all 10 connections) -->
+  <g stroke="rgba(200,220,200,0.25)" stroke-width="0.75" stroke-linecap="round">
+    <!-- Pentagon edges (allied colors) -->
+    <line x1="16" y1="5" x2="26.5" y2="12.6"/>
+    <line x1="26.5" y1="12.6" x2="22.5" y2="24.9"/>
+    <line x1="22.5" y1="24.9" x2="9.5" y2="24.9"/>
+    <line x1="9.5" y1="24.9" x2="5.5" y2="12.6"/>
+    <line x1="5.5" y1="12.6" x2="16" y2="5"/>
+    <!-- Pentagram diagonals (enemy colors) -->
+    <line x1="16" y1="5" x2="22.5" y2="24.9"/>
+    <line x1="16" y1="5" x2="9.5" y2="24.9"/>
+    <line x1="26.5" y1="12.6" x2="9.5" y2="24.9"/>
+    <line x1="26.5" y1="12.6" x2="5.5" y2="12.6"/>
+    <line x1="22.5" y1="24.9" x2="5.5" y2="12.6"/>
+  </g>
+
+  <!-- White (top) -->
+  <circle cx="16" cy="5" r="3.8" fill="#f9f6ee" stroke="#c8a84b" stroke-width="0.8"/>
+
+  <!-- Blue (upper right) -->
+  <circle cx="26.5" cy="12.6" r="3.8" fill="#1470a3" stroke="#6aafd6" stroke-width="0.8"/>
+
+  <!-- Black (lower right) -->
+  <circle cx="22.5" cy="24.9" r="3.8" fill="#1a1209" stroke="#8a7a60" stroke-width="0.8"/>
+
+  <!-- Red (lower left) -->
+  <circle cx="9.5" cy="24.9" r="3.8" fill="#d3202a" stroke="#e87060" stroke-width="0.8"/>
+
+  <!-- Green (upper left) -->
+  <circle cx="5.5" cy="12.6" r="3.8" fill="#00733e" stroke="#52b788" stroke-width="0.8"/>
+</svg>
