@@ -11,7 +11,7 @@
         'battlefield battlefield battlefield utility'
         'hand hand hand hand';
     grid-template-columns: 1fr 1fr 1fr 200px;
-    grid-template-rows: 2fr 2fr 2fr;
+    grid-template-rows: 1fr 1fr auto;
     gap: 1rem;
     padding: 1rem;
     background: #081c15;
