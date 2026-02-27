@@ -3,6 +3,7 @@ import { useGameView } from './GameView';
 import CommanderIcon from '@/components/CommanderIcon.vue';
 import LibraryIcon from '@/components/LibraryIcon.vue';
 import GraveyardIcon from '@/components/GraveyardIcon.vue';
+import ExileIcon from '@/components/ExileIcon.vue';
 
 const {
     CARD_BACK_URL,
@@ -91,6 +92,14 @@ const {
                         class="zone-card-back" />
                     <span v-if="game.graveyard.length > 0" class="overlay-zone-count">{{ game.graveyard.length }}</span>
                     <span class="overlay-zone-label">Graveyard</span>
+                </div>
+
+                <div class="overlay-zone exile-zone" @dragover="handleDragOver" @drop="handleDrop($event, 'exile')">
+                    <ExileIcon v-if="game.exile.length === 0" class="zone-card-back" />
+                    <img v-else :src="game.exile[game.exile.length - 1]?.imageUrl" alt="Top of exile"
+                        class="zone-card-back" />
+                    <span v-if="game.exile.length > 0" class="overlay-zone-count">{{ game.exile.length }}</span>
+                    <span class="overlay-zone-label">Exile</span>
                 </div>
             </div>
         </div>
