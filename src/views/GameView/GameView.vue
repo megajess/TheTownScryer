@@ -27,6 +27,7 @@ const {
     isZoneCollapsed,
     viewportWidth,
     battlefieldHeight,
+    isHoveringLibrary,
     loadTestCards,
     handleDragStart,
     handleDrop,
@@ -115,7 +116,8 @@ const {
                         </div>
                     </div>
 
-                    <div class="overlay-zone library-zone">
+                    <div class="overlay-zone library-zone" @click="game.draw()" @mouseenter="isHoveringLibrary = true"
+                        @mouseleave="isHoveringLibrary = false">
                         <LibraryIcon v-if="game.library.length === 0" class="zone-card-back" />
                         <img v-else :src="CARD_BACK_URL" alt="Library" class="zone-card-back" />
                         <span v-if="game.library.length > 0" class="overlay-zone-count">{{ game.library.length }}</span>
@@ -128,7 +130,7 @@ const {
                         <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
                             class="zone-card-back" />
                         <span v-if="game.graveyard.length > 0" class="overlay-zone-count">{{ game.graveyard.length
-                            }}</span>
+                        }}</span>
                         <span class="overlay-zone-label">Graveyard</span>
                     </div>
 

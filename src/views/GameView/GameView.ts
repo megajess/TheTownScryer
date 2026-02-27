@@ -30,6 +30,7 @@ export function useGameView() {
     const isZoneCollapsed = ref(false)
     const viewportWidth = ref(window.innerWidth)
     const battlefieldHeight = ref(0)
+    const isHoveringLibrary = ref(false)
 
     onMounted(async () => {
         window.addEventListener('keydown', handleKeyDown)
@@ -48,6 +49,26 @@ export function useGameView() {
         window.removeEventListener('keyup', handleKeyUp)
         window.removeEventListener('resize', updateDimensions)
     })
+
+    function handleKeyDown(event: KeyboardEvent) {
+        if (event.key === 'Shift') {
+            isShiftPressed.value = true
+
+            return
+        }
+
+        const num = parseInt(event.key)
+
+        if (isHoveringLibrary.value && num >= 1 && num <= 9) {
+            game.draw(num)
+        }
+    }
+
+    function handleKeyUp(event: KeyboardEvent) {
+        if (event.key === 'Shift') {
+            isShiftPressed.value = false
+        }
+    }
 
     async function loadTestCards(numberOfCommanders: number) {
         loading.value = true
@@ -309,18 +330,6 @@ export function useGameView() {
         hoveredCard.value = null
     }
 
-    function handleKeyDown(event: KeyboardEvent) {
-        if (event.key === 'Shift') {
-            isShiftPressed.value = true
-        }
-    }
-
-    function handleKeyUp(event: KeyboardEvent) {
-        if (event.key === 'Shift') {
-            isShiftPressed.value = false
-        }
-    }
-
     function resetView() {
         if (battlefieldRef.value) {
             const { width, height } = battlefieldRef.value.getBoundingClientRect()
@@ -352,6 +361,7 @@ export function useGameView() {
         isZoneCollapsed,
         viewportWidth,
         battlefieldHeight,
+        isHoveringLibrary,
         loadTestCards,
         handleDragStart,
         handleDrop,
