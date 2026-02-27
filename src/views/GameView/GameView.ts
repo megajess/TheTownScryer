@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useGameStore } from '@/stores/game'
 import type { CardInstance, ZoneType } from '@/types/card'
 import { fetchCardByName, getImageUrl } from '@/services/scryfall'
@@ -6,6 +6,8 @@ import { getCachedCard, cacheCard } from '@/services/cache'
 import { CARD_BACK_URL } from '@/services/scryfall'
 
 export function useGameView() {
+    const CANVAS_MULTIPLIER = 3.5
+
     const game = useGameStore()
     const loading = ref(false)
     const showLoadModal = ref(true)
@@ -18,12 +20,12 @@ export function useGameView() {
     const magnifierPosition = ref({ x: 0, y: 0 })
     const isShiftPressed = ref(false)
     const zoomLevel = ref(1.0)
+    const battlefieldRef = ref<HTMLElement | null>(null)
     const panX = ref(0)
     const panY = ref(0)
     const isPanning = ref(false)
     const panStart = ref({ x: 0, y: 0 })
-
-    const canvasSize = computed(() => `${500 / zoomLevel.value}%`)
+    const canvasSize = `${CANVAS_MULTIPLIER * 100}%`
 
     async function loadTestCards() {
         loading.value = true
@@ -63,6 +65,10 @@ export function useGameView() {
         game.shuffleLibrary()
         loading.value = false
         showLoadModal.value = false
+
+        await nextTick()
+
+        resetView()
     }
 
     async function testFetchCard() {
@@ -246,9 +252,24 @@ export function useGameView() {
         }
     }
 
-    onMounted(() => {
+    function resetView() {
+        if (battlefieldRef.value) {
+            const { width, height } = battlefieldRef.value.getBoundingClientRect()
+
+            panX.value = width * (1 - CANVAS_MULTIPLIER) / 2
+            panY.value = height * (1 - CANVAS_MULTIPLIER) / 2
+
+            zoomLevel.value = 1.0
+        }
+    }
+
+    onMounted(async () => {
         window.addEventListener('keydown', handleKeyDown)
         window.addEventListener('keyup', handleKeyUp)
+
+        await nextTick()
+
+        resetView()
     })
 
     onUnmounted(() => {
@@ -271,6 +292,7 @@ export function useGameView() {
         panX,
         panY,
         canvasSize,
+        battlefieldRef,
         loadTestCards,
         handleDragStart,
         handleDrop,
@@ -285,6 +307,7 @@ export function useGameView() {
         handleWheel,
         handlePanStart,
         handlePanMove,
-        handlePanEnd
+        handlePanEnd,
+        resetView
     }
 }

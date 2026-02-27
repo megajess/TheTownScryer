@@ -16,6 +16,7 @@ const {
     panX,
     panY,
     canvasSize,
+    battlefieldRef,
     loadTestCards,
     handleDragStart,
     handleDrop,
@@ -30,15 +31,16 @@ const {
     handleWheel,
     handlePanStart,
     handlePanMove,
-    handlePanEnd
+    handlePanEnd,
+    resetView
 } = useGameView()
 </script>
 
 <template>
     <div class="game-layout">
         <!-- Battlefield -->
-        <div class="battlefield" @wheel.prevent="handleWheel" @mousemove="handlePanMove" @mouseup="handlePanEnd"
-            @mouseleave="handlePanEnd">
+        <div class="battlefield" ref="battlefieldRef" @wheel.prevent="handleWheel" @mousemove="handlePanMove"
+            @mouseup="handlePanEnd" @mouseleave="handlePanEnd">
             <div class="battlefield-cards" @dragover="handleDragOver" @drop="handleDrop($event, 'battlefield')"
                 :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`, transformOrigin: '0 0', width: canvasSize, height: canvasSize }"
                 @mousedown.self="handlePanStart">
@@ -103,6 +105,7 @@ const {
             </div>
             <button @click="game.draw()" class="action-btn">Draw</button>
             <button @click="showLoadModal = true" class="action-btn">Load Deck</button>
+            <button @click="resetView" class="action-btn">Reset View</button>
         </div>
 
         <!-- Hand -->
