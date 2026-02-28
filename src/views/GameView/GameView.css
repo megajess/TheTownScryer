@@ -2,8 +2,13 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: "Press Start 2P", system-ui;
 }
+
+:global(button, input, select, textarea) {
+    font-family: inherit;
+}
+
 
 .game-layout {
     display: grid;
@@ -374,6 +379,8 @@
     color: #b7e4c7;
     font-size: 0.8rem;
     margin-top: 0.25rem;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
 }
 
 .cast-count {
