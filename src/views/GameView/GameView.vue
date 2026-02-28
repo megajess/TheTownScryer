@@ -91,12 +91,17 @@ const {
         <!-- Battlefield -->
         <div class="battlefield" ref="battlefieldRef" @wheel.prevent="handleWheel" @mousemove="handlePanMove"
             @mouseup="handlePanEnd" @mouseleave="handlePanEnd">
+
+            <!-- Playable Area -->
             <div class="battlefield-cards" @dragover="handleDragOver" @drop="handleDrop($event, 'battlefield')"
                 :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`, transformOrigin: '0 0', width: canvasSize, height: canvasSize }"
                 @mousedown.self="handlePanStart">
+
+                <!-- Cards On Battlefield -->
                 <div v-for="card in game.battlefield" :key="card.id" class="card battlefield-card"
-                    :style="{ left: card.x + 'px', top: card.y + 'px' }" draggable="true"
-                    @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
+                    :class="{ 'is-tapped': card.tapped }" :style="{ left: card.x + 'px', top: card.y + 'px' }"
+                    draggable="true" @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
+                    @mouseleave="handleCardLeave" @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @contextmenu="handleContextMenu($event, card.id)">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                 </div>
@@ -144,7 +149,7 @@ const {
                         <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
                             class="zone-card-back" />
                         <span v-if="game.graveyard.length > 0" class="overlay-zone-count">{{ game.graveyard.length
-                        }}</span>
+                            }}</span>
                         <span class="overlay-zone-label">Graveyard</span>
                     </div>
 

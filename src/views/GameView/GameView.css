@@ -160,6 +160,11 @@
     position: relative;
     width: 150px;
     flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.card.is-tapped {
+    transform: rotate(90deg);
 }
 
 .card img {

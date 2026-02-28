@@ -51,16 +51,28 @@ export function useGameView() {
     })
 
     function handleKeyDown(event: KeyboardEvent) {
-        if (event.key === 'Shift') {
+        const key = event.key.toLowerCase()
+
+        if (key === 'shift') {
             isShiftPressed.value = true
 
             return
         }
 
-        const num = parseInt(event.key)
+        if (isHoveringLibrary.value) {
+            const num = parseInt(key)
 
-        if (isHoveringLibrary.value && num >= 1 && num <= 9) {
-            game.draw(num)
+            if (num >= 1 && num <= 9) {
+                game.draw(num)
+            }
+        }
+
+        if (key === 't') {
+            const cardId = hoveredCard.value?.id
+
+            if (!cardId) return
+
+            game.toggleTap(cardId)
         }
     }
 

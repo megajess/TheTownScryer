@@ -79,6 +79,14 @@ export const useGameStore = defineStore('game', () => {
         return zoneMap[zone]
     }
 
+    function toggleTap(cardId: string) {
+        const card = findCard(cardId)
+
+        if (!card) return
+
+        card.tapped = !card.tapped
+    }
+
     function findCard(cardId: string): CardInstance | undefined {
         const allZones = [library, hand, battlefield, commandZone, graveyard, exile, reveal]
 
@@ -126,5 +134,6 @@ export const useGameStore = defineStore('game', () => {
         loadCommandZone,
         findCard,
         moveCard,
+        toggleTap,
     }
 })
