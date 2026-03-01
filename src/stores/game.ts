@@ -87,6 +87,10 @@ export const useGameStore = defineStore('game', () => {
         card.tapped = !card.tapped
     }
 
+    function untapAll() {
+        battlefield.value.forEach(card => card.tapped = false)
+    }
+
     function findCard(cardId: string): CardInstance | undefined {
         const allZones = [library, hand, battlefield, commandZone, graveyard, exile, reveal]
 
@@ -135,5 +139,6 @@ export const useGameStore = defineStore('game', () => {
         findCard,
         moveCard,
         toggleTap,
+        untapAll,
     }
 })

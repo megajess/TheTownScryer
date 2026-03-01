@@ -334,6 +334,54 @@
     align-items: center;
 }
 
+.controls-overlay {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    z-index: 50;
+}
+
+.controls-overlay button {
+    background: transparent;
+    border: 1px solid #74c69d;
+    color: #74c69d;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+}
+
+.controls-overlay button:hover {
+    background: #74c69d;
+    color: #1b4332;
+}
+
+.draw-btn-group {
+    position: relative;
+}
+
+.draw-extra-btns {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding-bottom: 0.3rem;
+    transform: translateY(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.draw-extra-btns.visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
 .zone-card-back {
     width: 100%;
     border-radius: 4px;

@@ -31,6 +31,10 @@ const {
     viewportWidth,
     battlefieldHeight,
     isHoveringLibrary,
+    isDrawHovered,
+    showDrawXModal,
+    drawXCount,
+    drawXInput,
     loadTestCards,
     handleDragStart,
     handleDrop,
@@ -47,7 +51,8 @@ const {
     handlePanMove,
     handlePanEnd,
     resetView,
-    toggleMenu
+    toggleMenu,
+    handleDrawX,
 } = useGameView()
 </script>
 
@@ -105,6 +110,20 @@ const {
                     @contextmenu="handleContextMenu($event, card.id)">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                 </div>
+            </div>
+
+            <!-- Controls Overlay -->
+            <div class="controls-overlay">
+                <button @click="game.untapAll()">Untap</button>
+
+                <div class="draw-btn-group" @mouseenter="isDrawHovered = true" @mouseleave="isDrawHovered = false">
+                    <div class="draw-extra-btns" :class="{ visible: isDrawHovered }">
+                        <button @click="showDrawXModal = true">Draw X</button>
+                        <button @click="game.draw(7)">Draw 7</button>
+                    </div>
+                    <button @click="game.draw(1)">{{ isDrawHovered ? 'Draw 1' : 'Draw' }}</button>
+                </div>
+
             </div>
 
             <!-- Overlay Zones -->
@@ -186,6 +205,19 @@ const {
                 </div>
             </div>
         </div>
+
+        <!-- Draw Modal -->
+        <div v-if="showDrawXModal" class="modal-overlay" @click.self="showDrawXModal = false">
+            <div class="modal-content">
+                <p>Draw how many cards?</p>
+                <input ref="drawXInput" type="number" v-model="drawXCount" min="1" />
+                <div class="modal-buttons">
+                    <button @click="showDrawXModal = false">Cancel</button>
+                    <button @click="handleDrawX">Ok</button>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Deck Loader Modal -->
         <div v-if="showLoadModal" class="modal-overlay" @click="showLoadModal = false">

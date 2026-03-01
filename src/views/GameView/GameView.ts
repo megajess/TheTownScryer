@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import type { CardInstance, ZoneType } from '@/types/card'
 import { fetchCardByName, getImageUrl } from '@/services/scryfall'
@@ -31,6 +31,17 @@ export function useGameView() {
     const viewportWidth = ref(window.innerWidth)
     const battlefieldHeight = ref(0)
     const isHoveringLibrary = ref(false)
+    const isDrawHovered = ref(false)
+    const showDrawXModal = ref(false)
+    const drawXCount = ref<number | null>(null)
+    const drawXInput = ref<HTMLInputElement | null>(null)
+
+    watch(showDrawXModal, (val) => {
+        if (val) {
+            nextTick(() => drawXInput.value?.focus())
+        }
+    })
+
 
     onMounted(async () => {
         window.addEventListener('keydown', handleKeyDown)
@@ -49,6 +60,14 @@ export function useGameView() {
         window.removeEventListener('keyup', handleKeyUp)
         window.removeEventListener('resize', updateDimensions)
     })
+
+    function handleDrawX() {
+        if (drawXCount.value && drawXCount.value > 0) {
+            game.draw(drawXCount.value)
+            showDrawXModal.value = false
+            drawXCount.value = null
+        }
+    }
 
     function handleKeyDown(event: KeyboardEvent) {
         const key = event.key.toLowerCase()
@@ -374,6 +393,10 @@ export function useGameView() {
         viewportWidth,
         battlefieldHeight,
         isHoveringLibrary,
+        isDrawHovered,
+        showDrawXModal,
+        drawXCount,
+        drawXInput,
         loadTestCards,
         handleDragStart,
         handleDrop,
@@ -390,6 +413,7 @@ export function useGameView() {
         handlePanMove,
         handlePanEnd,
         resetView,
-        toggleMenu
+        toggleMenu,
+        handleDrawX,
     }
 }
