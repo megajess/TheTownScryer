@@ -210,7 +210,7 @@ const {
         <div v-if="showDrawXModal" class="modal-overlay" @click.self="showDrawXModal = false">
             <div class="modal-content">
                 <p>Draw how many cards?</p>
-                <input ref="drawXInput" type="number" v-model="drawXCount" min="1" />
+                <input ref="drawXInput" type="number" v-model="drawXCount" min="1" @keyup.enter="handleDrawX" />
                 <div class="modal-buttons">
                     <button @click="showDrawXModal = false">Cancel</button>
                     <button @click="handleDrawX">Ok</button>
