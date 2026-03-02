@@ -358,6 +358,13 @@ export function useGameView() {
         closeContextMenu()
     }
 
+    function toggleTapCard() {
+        if (contextMenuCard.value) {
+            game.toggleTap(contextMenuCard.value)
+        }
+        closeContextMenu()
+    }
+
     function returnToCommandZone() {
         if (contextMenuCard.value) {
             const card = game.findCard(contextMenuCard.value)
@@ -474,6 +481,7 @@ export function useGameView() {
         toggleMenu,
         handleDrawX,
         handleScryX,
+        toggleTapCard,
         returnToCommandZone,
         moveToExile,
         returnToHand,

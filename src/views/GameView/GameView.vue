@@ -58,6 +58,7 @@ const {
     toggleMenu,
     handleDrawX,
     handleScryX,
+    toggleTapCard,
     returnToCommandZone,
     moveToExile,
     returnToHand,
@@ -281,6 +282,9 @@ const {
 
             <!-- Battlefield options -->
             <template v-if="game.findCard(contextMenuCard!)?.zone === 'battlefield'">
+                <div class="context-menu-item" @click="toggleTapCard">
+                    {{ game.findCard(contextMenuCard!)?.tapped ? 'Untap' : 'Tap' }}
+                </div>
                 <div v-if="game.findCard(contextMenuCard!)?.startsInCommandZone" class="context-menu-item"
                     @click="returnToCommandZone">
                     Return to Command Zone
