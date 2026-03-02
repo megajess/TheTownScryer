@@ -291,6 +291,7 @@
     color: #d8f3dc;
     cursor: pointer;
     transition: background 0.2s;
+    font-size: 0.7rem;
 }
 
 .context-menu-item:hover {

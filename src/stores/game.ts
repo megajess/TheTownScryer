@@ -103,7 +103,7 @@ export const useGameStore = defineStore('game', () => {
         return undefined
     }
 
-    function moveCard(cardId: string, fromZone: ZoneType, toZone: ZoneType, x?: number, y?: number) {
+    function moveCard(cardId: string, fromZone: ZoneType, toZone: ZoneType, position?: number | 'top' | 'bottom') {
         const fromRef = getZoneRef(fromZone)
         const toRef = getZoneRef(toZone)
         const index = fromRef.value.findIndex((c) => c.id === cardId)
@@ -115,11 +115,22 @@ export const useGameStore = defineStore('game', () => {
         if (card) {
             card.zone = toZone
 
-            if (x !== undefined) card.x = x
-            if (y !== undefined) card.y = y
-
-            toRef.value.push(card)
+            if (position === 'top') {
+                toRef.value.unshift(card)
+            } else if (typeof position === 'number') {
+                toRef.value.splice(position, 0, card)
+            } else {
+                toRef.value.push(card)
+            }
         }
+    }
+
+    function placeOnBattlefield(cardId: string, fromZone: ZoneType, x: number, y: number) {
+        const card = findCard(cardId)
+        if (!card) return
+        card.x = x
+        card.y = y
+        moveCard(cardId, fromZone, 'battlefield')
     }
 
     return {
@@ -138,6 +149,7 @@ export const useGameStore = defineStore('game', () => {
         loadCommandZone,
         findCard,
         moveCard,
+        placeOnBattlefield,
         toggleTap,
         untapAll,
     }

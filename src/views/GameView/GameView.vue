@@ -35,6 +35,7 @@ const {
     showDrawXModal,
     drawXCount,
     drawXInput,
+    contextMenuCard,
     loadTestCards,
     handleDragStart,
     handleDrop,
@@ -53,6 +54,10 @@ const {
     resetView,
     toggleMenu,
     handleDrawX,
+    returnToCommandZone,
+    moveToExile,
+    returnToHand,
+    moveToLibrary,
 } = useGameView()
 </script>
 
@@ -168,7 +173,7 @@ const {
                         <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
                             class="zone-card-back" />
                         <span v-if="game.graveyard.length > 0" class="overlay-zone-count">{{ game.graveyard.length
-                            }}</span>
+                        }}</span>
                         <span class="overlay-zone-label">Graveyard</span>
                     </div>
 
@@ -199,9 +204,8 @@ const {
                     :class="{ dragging: draggedCardId === card.id }" draggable="true"
                     @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
-                    @mouseleave="handleCardLeave">
+                    @mouseleave="handleCardLeave" @contextmenu="handleContextMenu($event, card.id)">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
-                    <button @click="game.discard(card.id)" class="discard-btn">Discard</button>
                 </div>
             </div>
         </div>
@@ -238,9 +242,38 @@ const {
         <!-- Context Menu -->
         <div v-if="showContextMenu" class="context-menu"
             :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }" @click.stop>
-            <div class="context-menu-item" @click="moveToGraveyard">
-                Move to Graveyard
+            <!-- Hand options -->
+            <div v-if="game.findCard(contextMenuCard!)?.zone === 'hand'" class="context-menu-item"
+                @click="game.discard(contextMenuCard!); closeContextMenu()">
+                Discard
             </div>
+
+            <!-- Battlefield options -->
+            <template v-if="game.findCard(contextMenuCard!)?.zone === 'battlefield'">
+                <div v-if="game.findCard(contextMenuCard!)?.startsInCommandZone" class="context-menu-item"
+                    @click="returnToCommandZone">
+                    Return to Command Zone
+                </div>
+                <div class="context-menu-item" @click="moveToGraveyard">
+                    Move to Graveyard
+                </div>
+
+                <div class="context-menu-item" @click="moveToExile">
+                    Exile
+                </div>
+
+                <div class="context-menu-item" @click="returnToHand">
+                    Return to Hand
+                </div>
+
+                <div class="context-menu-item" @click="moveToLibrary('top')">
+                    Move to top of library
+                </div>
+
+                <div class="context-menu-item" @click="moveToLibrary('bottom')">
+                    Move to bottom of library
+                </div>
+            </template>
         </div>
 
         <!-- Click outside to close context menu -->

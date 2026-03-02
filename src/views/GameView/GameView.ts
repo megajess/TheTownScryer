@@ -42,7 +42,6 @@ export function useGameView() {
         }
     })
 
-
     onMounted(async () => {
         window.addEventListener('keydown', handleKeyDown)
         window.addEventListener('keyup', handleKeyUp)
@@ -302,7 +301,11 @@ export function useGameView() {
                     finalY: y
                 })
 
-                game.moveCard(draggedCardId.value, card.zone, toZone, x, y)
+                if (toZone === 'battlefield') {
+                    game.placeOnBattlefield(draggedCardId.value, card.zone, x, y)
+                } else {
+                    game.moveCard(draggedCardId.value, card.zone, toZone)
+                }
             }
         }
 
@@ -333,6 +336,39 @@ export function useGameView() {
             }
         }
 
+        closeContextMenu()
+    }
+
+    function returnToCommandZone() {
+        if (contextMenuCard.value) {
+            const card = game.findCard(contextMenuCard.value)
+            if (card) game.moveCard(contextMenuCard.value, card.zone, 'commandZone')
+        }
+        closeContextMenu()
+    }
+
+    function moveToExile() {
+        if (contextMenuCard.value) {
+            const card = game.findCard(contextMenuCard.value)
+            if (card) game.moveCard(contextMenuCard.value, card.zone, 'exile')
+        }
+        closeContextMenu()
+    }
+
+    function returnToHand() {
+        if (contextMenuCard.value) {
+            const card = game.findCard(contextMenuCard.value)
+            if (card) game.moveCard(contextMenuCard.value, card.zone, 'hand')
+        }
+        closeContextMenu()
+    }
+
+    // Position is 0 based from the top, so a position of 0 is the same as 'top'.
+    function moveToLibrary(position: number | 'top' | 'bottom') {
+        if (contextMenuCard.value) {
+            const card = game.findCard(contextMenuCard.value)
+            if (card) game.moveCard(contextMenuCard.value, card.zone, 'library', position)
+        }
         closeContextMenu()
     }
 
@@ -379,6 +415,7 @@ export function useGameView() {
         showLoadModal,
         draggedCardId,
         contextMenuPosition,
+        contextMenuCard,
         showContextMenu,
         hoveredCard,
         magnifierPosition,
@@ -415,5 +452,9 @@ export function useGameView() {
         resetView,
         toggleMenu,
         handleDrawX,
+        returnToCommandZone,
+        moveToExile,
+        returnToHand,
+        moveToLibrary,
     }
 }
