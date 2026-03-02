@@ -345,7 +345,7 @@
     z-index: 50;
 }
 
-.controls-overlay button {
+.controls-overlay :deep(button) {
     background: transparent;
     border: 1px solid #74c69d;
     color: #74c69d;
@@ -354,33 +354,42 @@
     border-radius: 4px;
 }
 
-.controls-overlay button:hover {
+.controls-overlay :deep(button):hover {
     background: #74c69d;
     color: #1b4332;
 }
 
-.draw-btn-group {
-    position: relative;
+.card.is-scrying {
+    outline: 2px solid #74c69d;
+    cursor: default;
 }
 
-.draw-extra-btns {
+.card.is-scrying:hover img {
+    transform: none;
+}
+
+.scry-buttons {
     position: absolute;
-    bottom: 100%;
-    left: 0;
+    bottom: 0.4rem;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    padding-bottom: 0.3rem;
-    transform: translateY(6px);
-    opacity: 0;
-    pointer-events: none;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    gap: 0.25rem;
 }
 
-.draw-extra-btns.visible {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: auto;
+.scry-buttons button {
+    background: rgba(8, 28, 21, 0.92);
+    color: #95d5b2;
+    border: 1px solid #52b788;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.55rem;
+    cursor: pointer;
+}
+
+.scry-buttons button:hover {
+    background: #52b788;
+    color: #1b4332;
 }
 
 .zone-card-back {

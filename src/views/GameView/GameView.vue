@@ -8,6 +8,7 @@ import CollapseIcon from '@/components/CollapseIcon.vue';
 import ExpandIcon from '@/components/ExpandIcon.vue';
 import GitHubIcon from '@/components/GitHubIcon.vue'
 import ExternalLinkIcon from '@/components/ExternalLinkIcon.vue'
+import ControlButton from '@/components/ControlButton.vue'
 
 
 const {
@@ -31,10 +32,12 @@ const {
     viewportWidth,
     battlefieldHeight,
     isHoveringLibrary,
-    isDrawHovered,
     showDrawXModal,
     drawXCount,
     drawXInput,
+    showScryXModal,
+    scryXCount,
+    scryXInput,
     contextMenuCard,
     loadTestCards,
     handleDragStart,
@@ -54,6 +57,7 @@ const {
     resetView,
     toggleMenu,
     handleDrawX,
+    handleScryX,
     returnToCommandZone,
     moveToExile,
     returnToHand,
@@ -121,14 +125,24 @@ const {
             <div class="controls-overlay">
                 <button @click="game.untapAll()">Untap</button>
 
-                <div class="draw-btn-group" @mouseenter="isDrawHovered = true" @mouseleave="isDrawHovered = false">
-                    <div class="draw-extra-btns" :class="{ visible: isDrawHovered }">
-                        <button @click="showDrawXModal = true">Draw X</button>
-                        <button @click="game.draw(7)">Draw 7</button>
-                    </div>
-                    <button @click="game.draw(1)">{{ isDrawHovered ? 'Draw 1' : 'Draw' }}</button>
-                </div>
+                <ControlButton
+                    label="Draw"
+                    hoveredLabel="Draw 1"
+                    :extra-buttons="[
+                        { label: 'Draw X', onClick: () => showDrawXModal = true },
+                        { label: 'Draw 7', onClick: () => game.draw(7) },
+                    ]"
+                    :on-primary="() => game.draw(1)"
+                />
 
+                <ControlButton
+                    label="Scry"
+                    hoveredLabel="Scry 1"
+                    :extra-buttons="[
+                        { label: 'Scry X', onClick: () => showScryXModal = true },
+                    ]"
+                    :on-primary="() => game.scry(1)"
+                />
             </div>
 
             <!-- Overlay Zones -->
@@ -201,16 +215,22 @@ const {
             </div>
             <div class="hand-cards">
                 <div v-for="card in game.hand" :key="card.id" class="card"
-                    :class="{ dragging: draggedCardId === card.id }" draggable="true"
+                    :class="{ dragging: draggedCardId === card.id, 'is-scrying': card.isScrying }"
+                    :draggable="!card.isScrying"
                     @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
-                    @mouseleave="handleCardLeave" @contextmenu="handleContextMenu($event, card.id)">
+                    @mouseleave="handleCardLeave"
+                    @contextmenu="!card.isScrying && handleContextMenu($event, card.id)">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                    <div v-if="card.isScrying" class="scry-buttons">
+                        <button @click.stop="game.placeScryCard(card.id, 'top')">Top</button>
+                        <button @click.stop="game.placeScryCard(card.id, 'bottom')">Bot</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Draw Modal -->
+        <!-- Draw X Modal -->
         <div v-if="showDrawXModal" class="modal-overlay" @click.self="showDrawXModal = false">
             <div class="modal-content">
                 <p>Draw how many cards?</p>
@@ -222,6 +242,17 @@ const {
             </div>
         </div>
 
+        <!-- Scry X Modal -->
+        <div v-if="showScryXModal" class="modal-overlay" @click.self="showScryXModal = false">
+            <div class="modal-content">
+                <p>Scry how many cards?</p>
+                <input ref="scryXInput" type="number" v-model="scryXCount" min="1" @keyup.enter="handleScryX" />
+                <div class="modal-buttons">
+                    <button @click="showScryXModal = false">Cancel</button>
+                    <button @click="handleScryX">Ok</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Deck Loader Modal -->
         <div v-if="showLoadModal" class="modal-overlay" @click="showLoadModal = false">

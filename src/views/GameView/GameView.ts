@@ -31,14 +31,22 @@ export function useGameView() {
     const viewportWidth = ref(window.innerWidth)
     const battlefieldHeight = ref(0)
     const isHoveringLibrary = ref(false)
-    const isDrawHovered = ref(false)
     const showDrawXModal = ref(false)
     const drawXCount = ref<number | null>(null)
     const drawXInput = ref<HTMLInputElement | null>(null)
+    const showScryXModal = ref(false)
+    const scryXCount = ref<number | null>(null)
+    const scryXInput = ref<HTMLInputElement | null>(null)
 
     watch(showDrawXModal, (val) => {
         if (val) {
             nextTick(() => drawXInput.value?.focus())
+        }
+    })
+
+    watch(showScryXModal, (val) => {
+        if (val) {
+            nextTick(() => scryXInput.value?.focus())
         }
     })
 
@@ -65,6 +73,14 @@ export function useGameView() {
             game.draw(drawXCount.value)
             showDrawXModal.value = false
             drawXCount.value = null
+        }
+    }
+
+    function handleScryX() {
+        if (scryXCount.value && scryXCount.value > 0) {
+            game.scry(scryXCount.value)
+            showScryXModal.value = false
+            scryXCount.value = null
         }
     }
 
@@ -232,11 +248,14 @@ export function useGameView() {
     }
 
     function handleDragStart(event: DragEvent, cardId: string) {
+        const card = game.findCard(cardId)
+
+        if (card?.isScrying) return
+
         draggedCardId.value = cardId
 
         const target = event.currentTarget as HTMLElement
         const rect = target.getBoundingClientRect()
-        const card = game.findCard(cardId)
         const isOnBattlefield = card?.zone === 'battlefield'
         const width = isOnBattlefield ? rect.width : rect.width * zoomLevel.value
         const height = isOnBattlefield ? rect.height : rect.height * zoomLevel.value
@@ -430,10 +449,12 @@ export function useGameView() {
         viewportWidth,
         battlefieldHeight,
         isHoveringLibrary,
-        isDrawHovered,
         showDrawXModal,
         drawXCount,
         drawXInput,
+        showScryXModal,
+        scryXCount,
+        scryXInput,
         loadTestCards,
         handleDragStart,
         handleDrop,
@@ -452,6 +473,7 @@ export function useGameView() {
         resetView,
         toggleMenu,
         handleDrawX,
+        handleScryX,
         returnToCommandZone,
         moveToExile,
         returnToHand,

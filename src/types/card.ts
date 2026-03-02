@@ -31,4 +31,5 @@ export interface CardInstance {
     x?: number
     y?: number
     isFlipped: boolean
+    isScrying?: boolean
 }

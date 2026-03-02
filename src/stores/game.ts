@@ -115,6 +115,10 @@ export const useGameStore = defineStore('game', () => {
         if (card) {
             card.zone = toZone
 
+            if (toZone === 'library') {
+                card.isScrying = false
+            }
+
             if (position === 'top') {
                 toRef.value.unshift(card)
             } else if (typeof position === 'number') {
@@ -123,6 +127,24 @@ export const useGameStore = defineStore('game', () => {
                 toRef.value.push(card)
             }
         }
+    }
+
+    function scry(count: number = 1) {
+        for (let i = 0; i < count; i++) {
+            if (library.value.length === 0) break
+
+            const card = library.value.shift()
+
+            if (card) {
+                card.zone = 'hand'
+                card.isScrying = true
+                hand.value.push(card)
+            }
+        }
+    }
+
+    function placeScryCard(cardId: string, position: 'top' | 'bottom') {
+        moveCard(cardId, 'hand', 'library', position)
     }
 
     function placeOnBattlefield(cardId: string, fromZone: ZoneType, x: number, y: number) {
@@ -152,5 +174,7 @@ export const useGameStore = defineStore('game', () => {
         placeOnBattlefield,
         toggleTap,
         untapAll,
+        scry,
+        placeScryCard,
     }
 })
