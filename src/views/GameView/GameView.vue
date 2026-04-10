@@ -245,6 +245,15 @@ const {
                 <img :src="magnifiedCard.faceDown ? CARD_BACK_URL : magnifiedCard.imageUrl" :alt="magnifiedCard.name" />
             </div>
 
+            <!-- Command Zone Magnifier -->
+            <div v-if="hoveredCard && isShiftPressed && hoveredCard.zone === 'commandZone'" class="card-magnifier reveal-magnifier">
+                <div class="magnifier-lens" :style="{
+                    backgroundImage: `url(${hoveredCard.imageUrl})`,
+                    backgroundPosition: `${magnifierPosition.x * 100}% ${magnifierPosition.y * 100}%`,
+                    backgroundSize: '400px auto'
+                }"></div>
+            </div>
+
             <!-- Reveal Card Magnifier -->
             <div v-if="hoveredCard && isShiftPressed && hoveredCard.zone === 'reveal'" class="card-magnifier reveal-magnifier">
                 <div class="magnifier-lens" :style="{
@@ -304,7 +313,10 @@ const {
                         <div v-for="commander in game.commanders" :key="commander.id" class="overlay-zone command-zone"
                             :draggable="game.commandZone.length > 0"
                             @dragstart="commander && handleDragStart($event, commander.id)" @dragend="handleDragEnd"
-                            @dragover="handleDragOver" @drop="handleDrop($event, 'commandZone')">
+                            @dragover="handleDragOver" @drop="handleDrop($event, 'commandZone')"
+                            @mouseenter="commander && handleCardHover(commander)"
+                            @mousemove="commander && handleCardMove($event, commander)"
+                            @mouseleave="handleCardLeave">
                             <CommanderIcon v-if="commander.zone !== 'commandZone'" class="zone-card-back" />
                             <img v-else :src="commander.imageUrl" alt="Command Zone" class="zone-card-back" />
                             <span v-if="commander.castCount && commander.castCount > 0" class="overlay-zone-count"
@@ -356,7 +368,7 @@ const {
             </div>
 
             <!-- Card Magnifier -->
-            <div v-if="hoveredCard && isShiftPressed && hoveredCard.zone !== 'reveal'" class="card-magnifier">
+            <div v-if="hoveredCard && isShiftPressed && hoveredCard.zone !== 'reveal' && hoveredCard.zone !== 'commandZone'" class="card-magnifier">
                 <div class="magnifier-lens" :style="{
                     backgroundImage: `url(${hoveredCard.imageUrl})`,
                     backgroundPosition: `${magnifierPosition.x * 100}% ${magnifierPosition.y * 100}%`,
@@ -641,10 +653,6 @@ const {
                     @click="game.setFaceDown(contextMenuCard!, true); closeContextMenu()">
                     Turn Facedown
                 </div>
-                <div v-if="game.findCard(contextMenuCard!)?.startsInCommandZone" class="context-menu-item"
-                    @click="returnToCommandZone">
-                    Return to Command Zone
-                </div>
                 <div class="context-menu-item has-submenu">
                     Counters <span class="submenu-arrow">▶</span>
                     <div class="context-submenu">
@@ -673,6 +681,13 @@ const {
 
                 <div class="context-menu-item" @click="moveToLibrary('bottom')">
                     Move to bottom of library
+                </div>
+            </template>
+
+            <!-- Universal: Return to Command Zone (any zone except commandZone) -->
+            <template v-if="game.findCard(contextMenuCard!)?.startsInCommandZone && game.findCard(contextMenuCard!)?.zone !== 'commandZone'">
+                <div class="context-menu-item" @click="returnToCommandZone">
+                    Return to Command Zone
                 </div>
             </template>
         </div>
