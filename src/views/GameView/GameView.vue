@@ -402,7 +402,7 @@ const {
                     Play Faceup
                 </div>
                 <div class="context-menu-item" @click="game.discard(contextMenuCard!); closeContextMenu()">
-                    Discard
+                    Move to Graveyard
                 </div>
                 <div class="context-menu-item" @click="moveToLibrary('top')">
                     Move to top of library
