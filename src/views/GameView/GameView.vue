@@ -57,6 +57,8 @@ const {
     showMulliganButtons,
     keepHand,
     mulligan,
+    scryTab,
+    ellipsis,
     isSearching,
     searchTab,
     searchFilter,
@@ -191,13 +193,13 @@ const {
             </div>
 
             <!-- Scrying Label -->
-            <div v-if="game.hand.some(c => c.isScrying)" class="scrying-label">Scrying...</div>
+            <div v-if="game.hand.some(c => c.isScrying)" class="scrying-label">Scrying{{ ellipsis }}</div>
 
             <!-- Searching Label -->
-            <div v-if="isSearching" class="scrying-label searching-label">Searching...</div>
+            <div v-if="isSearching" class="scrying-label searching-label">Searching{{ ellipsis }}</div>
 
             <!-- Shuffling Label -->
-            <div v-if="isShuffling" class="scrying-label shuffling-label">Shuffling...</div>
+            <div v-if="isShuffling" class="scrying-label shuffling-label">Shuffling{{ ellipsis }}</div>
 
             <!-- Controls Overlay -->
             <div class="controls-overlay">
@@ -297,8 +299,16 @@ const {
                 }">
                 </div>
             </div>
+            <!-- Scry Tab Bar -->
+            <div v-if="game.hand.some(c => c.isScrying)" class="search-bar">
+                <div class="search-tabs">
+                    <button class="search-tab" :class="{ active: scryTab === 'hand' }" @click="scryTab = 'hand'">Hand</button>
+                    <button class="search-tab" :class="{ active: scryTab === 'scry' }" @click="scryTab = 'scry'">Scry</button>
+                </div>
+            </div>
+
             <!-- Search Tab Bar -->
-            <div v-if="isSearching" class="search-bar">
+            <div v-else-if="isSearching" class="search-bar">
                 <div class="search-tabs">
                     <button class="search-tab" :class="{ active: searchTab === 'hand' }" @click="searchTab = 'hand'">Hand</button>
                     <button class="search-tab" :class="{ active: searchTab === 'search' }" @click="searchTab = 'search'">Search</button>
@@ -311,8 +321,20 @@ const {
                 <button class="search-done-btn" @click="stopSearch">Done</button>
             </div>
 
+            <!-- Scry Cards -->
+            <div v-if="game.hand.some(c => c.isScrying) && scryTab === 'scry'" class="hand-cards">
+                <div v-for="card in game.hand.filter(c => c.isScrying)" :key="card.id" class="card is-scrying"
+                    :class="{ dragging: draggedCardId === card.id }">
+                    <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                    <div class="scry-buttons">
+                        <button @click.stop="game.placeScryCard(card.id, 'top')">Top</button>
+                        <button @click.stop="game.placeScryCard(card.id, 'bottom')">Bot</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Search Results -->
-            <div v-if="isSearching && searchTab === 'search'" class="hand-cards">
+            <div v-else-if="isSearching && searchTab === 'search'" class="hand-cards">
                 <div v-for="card in filteredLibraryCards" :key="card.id" class="card"
                     :class="{ dragging: draggedCardId === card.id }"
                     draggable="true"
@@ -324,21 +346,17 @@ const {
                 </div>
             </div>
 
-            <!-- Hand (shown normally, or when on Hand tab during search) -->
-            <div v-if="!isSearching || searchTab === 'hand'" class="hand-cards">
-                <div v-for="card in game.hand" :key="card.id" class="card"
-                    :class="{ dragging: draggedCardId === card.id, 'is-scrying': card.isScrying }"
-                    :draggable="!card.isScrying"
+            <!-- Hand -->
+            <div v-else class="hand-cards">
+                <div v-for="card in game.hand.filter(c => !c.isScrying)" :key="card.id" class="card"
+                    :class="{ dragging: draggedCardId === card.id }"
+                    draggable="true"
                     @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
                     @mouseleave="handleCardLeave"
-                    @contextmenu="!card.isScrying && handleContextMenu($event, card.id)">
+                    @contextmenu="handleContextMenu($event, card.id)">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                     <span v-if="card.faceDown" class="facedown-label" @click.stop="game.setFaceDown(card.id, false)">Facedown</span>
-                    <div v-if="card.isScrying" class="scry-buttons">
-                        <button @click.stop="game.placeScryCard(card.id, 'top')">Top</button>
-                        <button @click.stop="game.placeScryCard(card.id, 'bottom')">Bot</button>
-                    </div>
                 </div>
             </div>
         </div>

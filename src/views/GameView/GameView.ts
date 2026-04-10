@@ -79,6 +79,7 @@ export function useGameView() {
     })
     const showMulliganButtons = ref(false)
     const mulliganCount = ref(0)
+    const scryTab = ref<'hand' | 'scry'>('scry')
     const isSearching = ref(false)
     const searchTab = ref<'hand' | 'search'>('search')
     const searchFilter = ref('')
@@ -110,6 +111,10 @@ export function useGameView() {
         selectedCommanderNames.value = []
     })
 
+    watch(() => game.hand.some(c => c.isScrying), (val) => {
+        if (val) scryTab.value = 'scry'
+    })
+
     watch(showDrawXModal, (val) => {
         if (val) {
             nextTick(() => drawXInput.value?.focus())
@@ -128,6 +133,11 @@ export function useGameView() {
         }
     })
 
+    const ellipsis = ref('.')
+    const _ellipsisInterval = setInterval(() => {
+        ellipsis.value = ellipsis.value === '.' ? '..' : ellipsis.value === '..' ? '...' : '.'
+    }, 400)
+
     onMounted(async () => {
         window.addEventListener('keydown', handleKeyDown)
         window.addEventListener('keyup', handleKeyUp)
@@ -141,6 +151,7 @@ export function useGameView() {
     })
 
     onUnmounted(() => {
+        clearInterval(_ellipsisInterval)
         window.removeEventListener('keydown', handleKeyDown)
         window.removeEventListener('keyup', handleKeyUp)
         window.removeEventListener('resize', updateDimensions)
@@ -645,6 +656,8 @@ export function useGameView() {
         showMulliganButtons,
         keepHand,
         mulligan,
+        scryTab,
+        ellipsis,
         isSearching,
         searchTab,
         searchFilter,
