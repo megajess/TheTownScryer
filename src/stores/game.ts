@@ -197,6 +197,17 @@ export const useGameStore = defineStore('game', () => {
         }
     }
 
+    function mill(count: number) {
+        for (let i = 0; i < count; i++) {
+            if (library.value.length === 0) break
+            const card = library.value.shift()
+            if (card) {
+                card.zone = 'graveyard'
+                graveyard.value.push(card)
+            }
+        }
+    }
+
     function returnHandToLibrary() {
         const cards = hand.value.splice(0)
         for (const card of cards) {
@@ -233,6 +244,7 @@ export const useGameStore = defineStore('game', () => {
         toggleTap,
         untapAll,
         setFaceDown,
+        mill,
         addCounter,
         removeCounter,
         incrementCounter,

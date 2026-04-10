@@ -38,6 +38,10 @@ const {
     showScryXModal,
     scryXCount,
     scryXInput,
+    showMillXModal,
+    millXCount,
+    millXInput,
+    handleMillX,
     showFreeformModal,
     freeformText,
     freeformInput,
@@ -385,6 +389,18 @@ const {
             </div>
         </div>
 
+        <!-- Mill X Modal -->
+        <div v-if="showMillXModal" class="modal-overlay" @click.self="showMillXModal = false">
+            <div class="modal-content">
+                <p>Mill how many cards?</p>
+                <input ref="millXInput" type="number" v-model="millXCount" min="1" @keyup.enter="handleMillX" />
+                <div class="modal-buttons">
+                    <button @click="showMillXModal = false">Cancel</button>
+                    <button @click="handleMillX">Ok</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Freeform Counter Modal -->
         <div v-if="showFreeformModal" class="modal-overlay" @click.self="showFreeformModal = false">
             <div class="modal-content">
@@ -549,6 +565,14 @@ const {
             :style="{ left: libraryMenuPosition.x + 'px', top: libraryMenuPosition.y + 'px' }" @click.stop>
             <div class="context-menu-item" @click="startSearch">Search</div>
             <div class="context-menu-item" @click="shuffleWithLabel(); closeLibraryMenu()">Shuffle</div>
+            <div class="context-menu-item has-submenu">
+                Mill <span class="submenu-arrow">▶</span>
+                <div class="context-submenu">
+                    <div class="context-menu-item" @click="game.mill(1); closeLibraryMenu()">Mill 1</div>
+                    <div class="context-menu-item" @click="game.mill(3); closeLibraryMenu()">Mill 3</div>
+                    <div class="context-menu-item" @click="showMillXModal = true; closeLibraryMenu()">Mill X</div>
+                </div>
+            </div>
         </div>
         <div v-if="showLibraryMenu" class="context-menu-overlay" @click="closeLibraryMenu"></div>
     </div>

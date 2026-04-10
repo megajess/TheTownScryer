@@ -94,6 +94,10 @@ export function useGameView() {
         return game.library.filter(c => c.name.toLowerCase().includes(q))
     })
 
+    const showMillXModal = ref(false)
+    const millXCount = ref<number | null>(null)
+    const millXInput = ref<HTMLInputElement | null>(null)
+
     const showFreeformModal = ref(false)
     const freeformText = ref('')
     const freeformInput = ref<HTMLInputElement | null>(null)
@@ -125,6 +129,10 @@ export function useGameView() {
         if (val) {
             nextTick(() => scryXInput.value?.focus())
         }
+    })
+
+    watch(showMillXModal, (val) => {
+        if (val) nextTick(() => millXInput.value?.focus())
     })
 
     watch(showFreeformModal, (val) => {
@@ -535,6 +543,14 @@ export function useGameView() {
         }
     }
 
+    function handleMillX() {
+        if (millXCount.value && millXCount.value > 0) {
+            game.mill(millXCount.value)
+            showMillXModal.value = false
+            millXCount.value = null
+        }
+    }
+
     function handleFreeformSubmit() {
         if (pendingFreeformCardId.value && freeformText.value.trim()) {
             game.addCounter(pendingFreeformCardId.value, 'freeform', freeformText.value.trim())
@@ -637,6 +653,10 @@ export function useGameView() {
         showScryXModal,
         scryXCount,
         scryXInput,
+        showMillXModal,
+        millXCount,
+        millXInput,
+        handleMillX,
         showFreeformModal,
         freeformText,
         freeformInput,
