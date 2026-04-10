@@ -58,6 +58,7 @@ const {
     toggleMenu,
     handleDrawX,
     handleScryX,
+    markFaceDown,
     toggleTapCard,
     returnToCommandZone,
     moveToExile,
@@ -118,7 +119,7 @@ const {
                     draggable="true" @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
                     @mouseleave="handleCardLeave" @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @contextmenu="handleContextMenu($event, card.id)">
-                    <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                    <img :src="card.faceDown ? CARD_BACK_URL : card.imageUrl" :alt="card.name" loading="lazy" />
                 </div>
             </div>
 
@@ -223,6 +224,7 @@ const {
                     @mouseleave="handleCardLeave"
                     @contextmenu="!card.isScrying && handleContextMenu($event, card.id)">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                    <span v-if="card.faceDown" class="facedown-label" @click.stop="game.setFaceDown(card.id, false)">Facedown</span>
                     <div v-if="card.isScrying" class="scry-buttons">
                         <button @click.stop="game.placeScryCard(card.id, 'top')">Top</button>
                         <button @click.stop="game.placeScryCard(card.id, 'bottom')">Bot</button>
@@ -275,15 +277,28 @@ const {
         <div v-if="showContextMenu" class="context-menu"
             :style="{ left: contextMenuPosition.x + 'px', top: contextMenuPosition.y + 'px' }" @click.stop>
             <!-- Hand options -->
-            <div v-if="game.findCard(contextMenuCard!)?.zone === 'hand'" class="context-menu-item"
-                @click="game.discard(contextMenuCard!); closeContextMenu()">
-                Discard
-            </div>
+            <template v-if="game.findCard(contextMenuCard!)?.zone === 'hand'">
+                <div v-if="!game.findCard(contextMenuCard!)?.faceDown" class="context-menu-item"
+                    @click="markFaceDown">
+                    Play Facedown
+                </div>
+                <div v-if="game.findCard(contextMenuCard!)?.faceDown" class="context-menu-item"
+                    @click="game.setFaceDown(contextMenuCard!, false); closeContextMenu()">
+                    Play Faceup
+                </div>
+                <div class="context-menu-item" @click="game.discard(contextMenuCard!); closeContextMenu()">
+                    Discard
+                </div>
+            </template>
 
             <!-- Battlefield options -->
             <template v-if="game.findCard(contextMenuCard!)?.zone === 'battlefield'">
                 <div class="context-menu-item" @click="toggleTapCard">
                     {{ game.findCard(contextMenuCard!)?.tapped ? 'Untap' : 'Tap' }}
+                </div>
+                <div v-if="game.findCard(contextMenuCard!)?.faceDown" class="context-menu-item"
+                    @click="game.setFaceDown(contextMenuCard!, false); closeContextMenu()">
+                    Flip
                 </div>
                 <div v-if="game.findCard(contextMenuCard!)?.startsInCommandZone" class="context-menu-item"
                     @click="returnToCommandZone">

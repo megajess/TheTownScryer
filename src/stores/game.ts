@@ -91,6 +91,11 @@ export const useGameStore = defineStore('game', () => {
         battlefield.value.forEach(card => card.tapped = false)
     }
 
+    function setFaceDown(cardId: string, value: boolean) {
+        const card = findCard(cardId)
+        if (card) card.faceDown = value
+    }
+
     function findCard(cardId: string): CardInstance | undefined {
         const allZones = [library, hand, battlefield, commandZone, graveyard, exile, reveal]
 
@@ -174,6 +179,7 @@ export const useGameStore = defineStore('game', () => {
         placeOnBattlefield,
         toggleTap,
         untapAll,
+        setFaceDown,
         scry,
         placeScryCard,
     }

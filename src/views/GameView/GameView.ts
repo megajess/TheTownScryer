@@ -5,8 +5,12 @@ import { fetchCardByName, getImageUrl } from '@/services/scryfall'
 import { getCachedCard, cacheCard } from '@/services/cache'
 import { CARD_BACK_URL } from '@/services/scryfall'
 
+const _cardBackPreload = new Image()
+_cardBackPreload.src = CARD_BACK_URL
+
 export function useGameView() {
     const CANVAS_MULTIPLIER = 3.5
+    const BATTLEFIELD_CARD_WIDTH = 150
 
     const game = useGameStore()
     const loading = ref(false)
@@ -256,41 +260,47 @@ export function useGameView() {
 
         const target = event.currentTarget as HTMLElement
         const rect = target.getBoundingClientRect()
-        const isOnBattlefield = card?.zone === 'battlefield'
-        const width = isOnBattlefield ? rect.width : rect.width * zoomLevel.value
-        const height = isOnBattlefield ? rect.height : rect.height * zoomLevel.value
-        const dragImg = createDragImage(target, width, height)
+        const dragWidth = BATTLEFIELD_CARD_WIDTH * zoomLevel.value
+        const dragHeight = rect.height / rect.width * dragWidth
+        const dragImg = createDragImage(target, dragWidth, dragHeight, card?.faceDown ? CARD_BACK_URL : undefined)
 
         if (!dragImg) return
 
+        const scale = dragWidth / rect.width
         dragGrabOffset.value = {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
+            x: (event.clientX - rect.left) * scale,
+            y: (event.clientY - rect.top) * scale
         }
 
         event.dataTransfer?.setDragImage(dragImg, dragGrabOffset.value.x, dragGrabOffset.value.y)
         setTimeout(() => document.body.removeChild(dragImg), 0)
     }
 
-    function createDragImage(target: HTMLElement, scaledWidth: number, scaledHeight: number): HTMLDivElement | null {
-        const cardImg = target.querySelector('img')?.src
+    function createDragImage(target: HTMLElement, scaledWidth: number, scaledHeight: number, overrideUrl?: string): HTMLCanvasElement | null {
+        const sourceImg = overrideUrl ? _cardBackPreload : target.querySelector('img')
 
-        if (!cardImg) return null
+        if (!sourceImg?.complete || !sourceImg.naturalWidth) return null
 
-        const dragImg = document.createElement('div')
+        const w = Math.round(scaledWidth)
+        const h = Math.round(scaledHeight)
 
-        dragImg.style.backgroundImage = `url(${cardImg})`
-        dragImg.style.backgroundSize = '100% 100%'
-        dragImg.style.width = scaledWidth + 'px'
-        dragImg.style.height = scaledHeight + 'px'
-        dragImg.style.position = 'fixed'
-        dragImg.style.top = '-9999px'
-        dragImg.style.left = '-9999px'
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        canvas.style.position = 'fixed'
+        canvas.style.top = '-9999px'
+        canvas.style.left = '-9999px'
 
-        document.body.appendChild(dragImg)
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return null
 
-        return dragImg
+        ctx.drawImage(sourceImg, 0, 0, w, h)
+
+        document.body.appendChild(canvas)
+
+        return canvas
     }
+
 
     function handleDrop(event: DragEvent, toZone: ZoneType) {
         if (draggedCardId.value) {
@@ -355,6 +365,13 @@ export function useGameView() {
             }
         }
 
+        closeContextMenu()
+    }
+
+    function markFaceDown() {
+        if (contextMenuCard.value) {
+            game.setFaceDown(contextMenuCard.value, true)
+        }
         closeContextMenu()
     }
 
@@ -481,6 +498,7 @@ export function useGameView() {
         toggleMenu,
         handleDrawX,
         handleScryX,
+        markFaceDown,
         toggleTapCard,
         returnToCommandZone,
         moveToExile,

@@ -368,6 +368,24 @@
     transform: none;
 }
 
+.facedown-label {
+    position: absolute;
+    top: 0.3rem;
+    left: 0.3rem;
+    background: rgba(8, 28, 21, 0.9);
+    color: #95d5b2;
+    border: 1px solid #52b788;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-size: 0.45rem;
+    cursor: pointer;
+}
+
+.facedown-label:hover {
+    background: #52b788;
+    color: #1b4332;
+}
+
 .scry-buttons {
     position: absolute;
     bottom: 0.4rem;
