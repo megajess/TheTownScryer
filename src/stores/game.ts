@@ -91,6 +91,11 @@ export const useGameStore = defineStore('game', () => {
         battlefield.value.forEach(card => card.tapped = false)
     }
 
+    function flipCard(cardId: string) {
+        const card = findCard(cardId)
+        if (card) card.isFlipped = !card.isFlipped
+    }
+
     function setFaceDown(cardId: string, value: boolean) {
         const card = findCard(cardId)
         if (card) card.faceDown = value
@@ -197,6 +202,17 @@ export const useGameStore = defineStore('game', () => {
         }
     }
 
+    function revealFromLibrary(count: number = 1) {
+        for (let i = 0; i < count; i++) {
+            if (library.value.length === 0) break
+            const card = library.value.shift()
+            if (card) {
+                card.zone = 'reveal'
+                reveal.value.push(card)
+            }
+        }
+    }
+
     function mill(count: number) {
         for (let i = 0; i < count; i++) {
             if (library.value.length === 0) break
@@ -204,6 +220,55 @@ export const useGameStore = defineStore('game', () => {
             if (card) {
                 card.zone = 'graveyard'
                 graveyard.value.push(card)
+            }
+        }
+    }
+
+    function clearAllZones() {
+        library.value = []
+        hand.value = []
+        battlefield.value = []
+        commandZone.value = []
+        graveyard.value = []
+        exile.value = []
+        reveal.value = []
+        commanderIds.value = []
+    }
+
+    function resetToStart() {
+        const allCards = [
+            ...library.value,
+            ...hand.value,
+            ...battlefield.value,
+            ...commandZone.value,
+            ...graveyard.value,
+            ...exile.value,
+            ...reveal.value,
+        ]
+
+        library.value = []
+        hand.value = []
+        battlefield.value = []
+        commandZone.value = []
+        graveyard.value = []
+        exile.value = []
+        reveal.value = []
+
+        for (const card of allCards) {
+            card.tapped = false
+            card.faceDown = false
+            card.counters = []
+            card.isScrying = false
+            card.x = undefined
+            card.y = undefined
+
+            if (card.startsInCommandZone) {
+                card.zone = 'commandZone'
+                card.castCount = 0
+                commandZone.value.push(card)
+            } else {
+                card.zone = 'library'
+                library.value.push(card)
             }
         }
     }
@@ -243,7 +308,11 @@ export const useGameStore = defineStore('game', () => {
         placeOnBattlefield,
         toggleTap,
         untapAll,
+        flipCard,
         setFaceDown,
+        clearAllZones,
+        resetToStart,
+        revealFromLibrary,
         mill,
         addCounter,
         removeCounter,

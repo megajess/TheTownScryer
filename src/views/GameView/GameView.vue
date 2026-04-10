@@ -57,6 +57,7 @@ const {
     needsCommanderSelection,
     selectedCommanderNames,
     confirmFilter,
+    confirmFilterInput,
     toggleCommanderSelection,
     confirmLoadDeck,
     showMulliganButtons,
@@ -112,6 +113,15 @@ const {
     moveToExile,
     returnToHand,
     moveToLibrary,
+    isRevealing,
+    isRevealMinimized,
+    magnifiedCard,
+    magnifyCard,
+    isDeckLoaded,
+    startNewGame,
+    startReveal,
+    revealAnother,
+    moveToBattlefield,
 } = useGameView()
 </script>
 
@@ -124,6 +134,7 @@ const {
                 <div v-if="openMenu === 'game'" class="menu-dropdown">
                     <div class="menu-option" @click.stop="game.draw(); openMenu = null">Draw</div>
                     <div class="menu-option" @click.stop="showLoadModal = true; openMenu = null">Load Deck</div>
+                    <div class="menu-option" :class="{ 'menu-option--disabled': !isDeckLoaded }" @click.stop="isDeckLoaded && startNewGame()">New Game</div>
                     <div class="menu-option" @click.stop="resetView(); openMenu = null">Reset View</div>
                 </div>
             </div>
@@ -166,7 +177,7 @@ const {
                     :class="{ 'is-tapped': card.tapped }" :style="{ left: card.x + 'px', top: card.y + 'px' }"
                     draggable="true" @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
                     @mouseleave="handleCardLeave" @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd">
-                    <img :src="card.faceDown ? CARD_BACK_URL : card.imageUrl" :alt="card.name" loading="lazy" />
+                    <img :src="card.faceDown ? CARD_BACK_URL : (card.isFlipped && card.backImageUrl ? card.backImageUrl : card.imageUrl)" :alt="card.name" loading="lazy" />
                     <button class="card-menu-btn" @click.stop="handleContextMenu($event, card.id)"><HamburgerIcon /></button>
                     <div v-if="card.counters.length" class="counter-overlays">
                         <div class="counter-group counter-group--bottom-left">
@@ -205,6 +216,42 @@ const {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Reveal Area -->
+            <div v-if="isRevealing" class="reveal-area" :class="{ 'is-minimized': isRevealMinimized }">
+                <div class="reveal-header">
+                    <span class="reveal-label">Revealed ({{ game.reveal.length }})</span>
+                    <button v-if="!isRevealMinimized && game.library.length > 0" class="reveal-another-btn" @click="revealAnother">Reveal Another</button>
+                    <button class="reveal-minimize-btn" @click="isRevealMinimized = !isRevealMinimized">
+                        <CollapseIcon v-if="!isRevealMinimized" />
+                        <ExpandIcon v-else />
+                    </button>
+                </div>
+                <div v-if="!isRevealMinimized" class="reveal-cards">
+                    <div v-for="card in game.reveal" :key="card.id" class="card reveal-card"
+                        @mouseenter="handleCardHover(card)"
+                        @mousemove="handleCardMove($event, card)"
+                        @mouseleave="handleCardLeave">
+                        <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                        <button class="card-menu-btn" @click.stop="handleContextMenu($event, card.id)"><HamburgerIcon /></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Magnified Card Overlay -->
+            <div v-if="magnifiedCard" class="magnified-card-overlay">
+                <button class="magnified-card-close" @click="magnifiedCard = null">✕</button>
+                <img :src="magnifiedCard.faceDown ? CARD_BACK_URL : magnifiedCard.imageUrl" :alt="magnifiedCard.name" />
+            </div>
+
+            <!-- Reveal Card Magnifier -->
+            <div v-if="hoveredCard && isShiftPressed && hoveredCard.zone === 'reveal'" class="card-magnifier reveal-magnifier">
+                <div class="magnifier-lens" :style="{
+                    backgroundImage: `url(${hoveredCard.imageUrl})`,
+                    backgroundPosition: `${magnifierPosition.x * 100}% ${magnifierPosition.y * 100}%`,
+                    backgroundSize: '400px auto'
+                }"></div>
             </div>
 
             <!-- Scrying Label -->
@@ -301,6 +348,7 @@ const {
 
         <!-- Hand -->
         <div class="hand-zone">
+            <span class="hand-count">{{ game.hand.filter(c => !c.isScrying).length }} cards</span>
             <!-- Mulligan Buttons -->
             <div v-if="showMulliganButtons" class="mulligan-bar">
                 <button class="mulligan-btn mulligan-btn--keep" @click="keepHand">Keep</button>
@@ -308,7 +356,7 @@ const {
             </div>
 
             <!-- Card Magnifier -->
-            <div v-if="hoveredCard && isShiftPressed" class="card-magnifier">
+            <div v-if="hoveredCard && isShiftPressed && hoveredCard.zone !== 'reveal'" class="card-magnifier">
                 <div class="magnifier-lens" :style="{
                     backgroundImage: `url(${hoveredCard.imageUrl})`,
                     backgroundPosition: `${magnifierPosition.x * 100}% ${magnifierPosition.y * 100}%`,
@@ -473,6 +521,7 @@ const {
                         </p>
                     </div>
                     <input
+                        ref="confirmFilterInput"
                         v-model="confirmFilter"
                         type="text"
                         placeholder="Filter cards..."
@@ -545,6 +594,16 @@ const {
                 </div>
             </template>
 
+            <!-- Reveal options -->
+            <template v-if="game.findCard(contextMenuCard!)?.zone === 'reveal'">
+                <div class="context-menu-item" @click="returnToHand">Move to Hand</div>
+                <div class="context-menu-item" @click="moveToBattlefield">Move to Battlefield</div>
+                <div class="context-menu-item" @click="moveToGraveyard">Move to Graveyard</div>
+                <div class="context-menu-item" @click="moveToExile">Move to Exile</div>
+                <div class="context-menu-item" @click="moveToLibrary('top')">Move to top of library</div>
+                <div class="context-menu-item" @click="moveToLibrary('bottom')">Move to bottom of library</div>
+            </template>
+
             <!-- Library search options -->
             <template v-if="game.findCard(contextMenuCard!)?.zone === 'library'">
                 <div class="context-menu-item" @click="moveToGraveyard">
@@ -566,12 +625,21 @@ const {
 
             <!-- Battlefield options -->
             <template v-if="game.findCard(contextMenuCard!)?.zone === 'battlefield'">
+                <div class="context-menu-item" @click="magnifyCard">Magnify</div>
+                <div v-if="game.findCard(contextMenuCard!)?.backImageUrl" class="context-menu-item"
+                    @click="game.flipCard(contextMenuCard!); closeContextMenu()">
+                    {{ game.findCard(contextMenuCard!)?.isFlipped ? 'Flip to Front' : 'Flip to Back' }}
+                </div>
                 <div class="context-menu-item" @click="toggleTapCard">
                     {{ game.findCard(contextMenuCard!)?.tapped ? 'Untap' : 'Tap' }}
                 </div>
                 <div v-if="game.findCard(contextMenuCard!)?.faceDown" class="context-menu-item"
                     @click="game.setFaceDown(contextMenuCard!, false); closeContextMenu()">
-                    Flip
+                    Turn Faceup
+                </div>
+                <div v-if="!game.findCard(contextMenuCard!)?.faceDown" class="context-menu-item"
+                    @click="game.setFaceDown(contextMenuCard!, true); closeContextMenu()">
+                    Turn Facedown
                 </div>
                 <div v-if="game.findCard(contextMenuCard!)?.startsInCommandZone" class="context-menu-item"
                     @click="returnToCommandZone">
@@ -622,6 +690,7 @@ const {
         <!-- Library Context Menu -->
         <div v-if="showLibraryMenu" class="context-menu"
             :style="{ left: libraryMenuPosition.x + 'px', top: libraryMenuPosition.y + 'px' }" @click.stop>
+            <div class="context-menu-item" @click="startReveal">Reveal</div>
             <div class="context-menu-item" @click="startSearch">Search</div>
             <div class="context-menu-item" @click="shuffleWithLabel(); closeLibraryMenu()">Shuffle</div>
             <div class="context-menu-item has-submenu">

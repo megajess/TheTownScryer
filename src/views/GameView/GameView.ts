@@ -1,7 +1,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import type { CardInstance, CounterType, ZoneType } from '@/types/card'
-import { fetchCardsByNames, getImageUrl } from '@/services/scryfall'
+import { fetchCardsByNames, getImageUrl, getBackImageUrl } from '@/services/scryfall'
 import { CARD_BACK_URL } from '@/services/scryfall'
 import { parseDeckList, type ParsedDeckEntry } from '@/services/deckParser'
 
@@ -47,6 +47,7 @@ export function useGameView() {
     const parsedEntries = ref<ParsedDeckEntry[]>([])
     const selectedCommanderNames = ref<string[]>([])
     const confirmFilter = ref('')
+    const confirmFilterInput = ref<HTMLInputElement | null>(null)
 
     const needsCommanderSelection = computed(() =>
         isCommanderDeck.value && !parsedEntries.value.some(e => e.isCommander)
@@ -110,6 +111,11 @@ export function useGameView() {
     const millXCount = ref<number | null>(null)
     const millXInput = ref<HTMLInputElement | null>(null)
 
+    const isRevealing = computed(() => game.reveal.length > 0)
+    const isRevealMinimized = ref(false)
+    const magnifiedCard = ref<CardInstance | null>(null)
+    const isDeckLoaded = ref(false)
+
     const showFreeformModal = ref(false)
     const freeformText = ref('')
     const freeformInput = ref<HTMLInputElement | null>(null)
@@ -146,6 +152,18 @@ export function useGameView() {
     watch(showMillXModal, (val) => {
         if (val) nextTick(() => millXInput.value?.focus())
     })
+
+    watch(groupedEntries, (val, oldVal) => {
+        if (isCommanderDeck.value && val.length > 0 && oldVal.length === 0) {
+            confirmFilterInput.value?.focus()
+        }
+    }, { flush: 'post' })
+
+    watch(isCommanderDeck, (val) => {
+        if (val && groupedEntries.value.length > 0) {
+            confirmFilterInput.value?.focus()
+        }
+    }, { flush: 'post' })
 
     watch(showFreeformModal, (val) => {
         if (val) {
@@ -237,6 +255,7 @@ export function useGameView() {
     async function confirmLoadDeck() {
         loading.value = true
         loadError.value = null
+        game.clearAllZones()
 
         const commanderNameSet = new Set(selectedCommanderNames.value)
         const entries = parsedEntries.value.map(e => ({
@@ -263,6 +282,7 @@ export function useGameView() {
                         cardId: scryfallCard.id,
                         name: scryfallCard.name,
                         imageUrl: getImageUrl(scryfallCard),
+                        backImageUrl: getBackImageUrl(scryfallCard),
                         zone: 'commandZone',
                         tapped: false,
                         faceDown: false,
@@ -277,6 +297,7 @@ export function useGameView() {
                         cardId: scryfallCard.id,
                         name: scryfallCard.name,
                         imageUrl: getImageUrl(scryfallCard),
+                        backImageUrl: getBackImageUrl(scryfallCard),
                         zone: 'library',
                         tapped: false,
                         faceDown: false,
@@ -296,6 +317,7 @@ export function useGameView() {
 
         loading.value = false
         showLoadModal.value = false
+        isDeckLoaded.value = true
         showMulliganButtons.value = true
         mulliganCount.value = 0
         deckText.value = ''
@@ -305,6 +327,17 @@ export function useGameView() {
 
         await nextTick()
         resetView()
+    }
+
+    function startNewGame() {
+        game.resetToStart()
+        isRevealMinimized.value = false
+        magnifiedCard.value = null
+        shuffleWithLabel()
+        game.draw(7)
+        showMulliganButtons.value = true
+        mulliganCount.value = 0
+        openMenu.value = null
     }
 
     function keepHand() {
@@ -628,6 +661,32 @@ export function useGameView() {
         graveyardFilter.value = ''
     }
 
+    function magnifyCard() {
+        if (contextMenuCard.value) {
+            magnifiedCard.value = game.findCard(contextMenuCard.value) ?? null
+        }
+        closeContextMenu()
+    }
+
+    function startReveal() {
+        game.revealFromLibrary(1)
+        closeLibraryMenu()
+    }
+
+    function revealAnother() {
+        game.revealFromLibrary(1)
+    }
+
+    function moveToBattlefield() {
+        if (contextMenuCard.value) {
+            const card = game.findCard(contextMenuCard.value)
+            if (card) {
+                game.placeOnBattlefield(contextMenuCard.value, card.zone, 100, 100)
+            }
+        }
+        closeContextMenu()
+    }
+
     function handleCardHover(card: CardInstance) {
         hoveredCard.value = card
     }
@@ -705,6 +764,7 @@ export function useGameView() {
         needsCommanderSelection,
         selectedCommanderNames,
         confirmFilter,
+        confirmFilterInput,
         toggleCommanderSelection,
         confirmLoadDeck,
         showMulliganButtons,
@@ -759,5 +819,14 @@ export function useGameView() {
         moveToExile,
         returnToHand,
         moveToLibrary,
+        isRevealing,
+        isRevealMinimized,
+        magnifiedCard,
+        magnifyCard,
+        isDeckLoaded,
+        startNewGame,
+        startReveal,
+        revealAnother,
+        moveToBattlefield,
     }
 }

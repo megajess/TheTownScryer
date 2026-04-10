@@ -112,6 +112,21 @@
     transform: translateY(-2px);
 }
 
+.hand-count {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.6rem;
+    background: rgba(8, 28, 21, 0.9);
+    color: #95d5b2;
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #52b788;
+    pointer-events: none;
+    z-index: 5;
+}
+
 .hand-zone {
     grid-area: hand;
     position: relative;
@@ -984,10 +999,144 @@
     z-index: 99;
 }
 
+.menu-option--disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
 .menu-option--info {
     cursor: default;
     color: #52b788;
     font-size: 0.8rem;
+}
+
+.magnified-card-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.85));
+}
+
+.magnified-card-overlay img {
+    width: 350px;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+}
+
+.magnified-card-close {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 28px;
+    height: 28px;
+    background: rgba(8, 28, 21, 0.9);
+    border: 1px solid #74c69d;
+    border-radius: 50%;
+    color: #d8f3dc;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 21;
+    line-height: 1;
+}
+
+.magnified-card-close:hover {
+    background: #74c69d;
+    color: #1b4332;
+}
+
+.reveal-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(8, 28, 21, 0.96);
+    border-bottom: 2px solid #74c69d;
+    border-radius: 0 0 8px 8px;
+    padding: 0.6rem 0.75rem;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.reveal-area.is-minimized {
+    padding: 0.4rem 0.75rem;
+}
+
+.reveal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.reveal-label {
+    color: #95d5b2;
+    font-size: 0.6rem;
+    font-family: 'Press Start 2P', monospace;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.reveal-another-btn {
+    background: transparent;
+    border: 1px solid #74c69d;
+    color: #74c69d;
+    border-radius: 4px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.6rem;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.reveal-another-btn:hover {
+    background: #74c69d;
+    color: #1b4332;
+}
+
+.reveal-magnifier {
+    top: 50%;
+    transform: translateY(-50%);
+    right: 1rem;
+    height: 50%;
+}
+
+.reveal-minimize-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    color: #74c69d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.reveal-minimize-btn:hover {
+    background: rgba(116, 198, 157, 0.2);
+}
+
+.reveal-cards {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+}
+
+.card.reveal-card {
+    width: 220px;
+    flex-shrink: 0;
 }
 
 .menu-option--link {

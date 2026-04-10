@@ -46,6 +46,13 @@ export async function fetchCardsByNames(names: string[]): Promise<Map<string, Sc
     return result
 }
 
+export function getBackImageUrl(card: ScryfallCard): string | undefined {
+    if (card.card_faces && card.card_faces[1]?.image_uris) {
+        return card.card_faces[1].image_uris.normal
+    }
+    return undefined
+}
+
 export function getImageUrl(card: ScryfallCard): string {
     if (card.card_faces && card.card_faces[0]?.image_uris) {
         return card.card_faces[0].image_uris.normal
