@@ -1,6 +1,6 @@
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
-import type { CardInstance, ZoneType } from '@/types/card'
+import type { CardInstance, CounterType, ZoneType } from '@/types/card'
 import { fetchCardByName, getImageUrl } from '@/services/scryfall'
 import { getCachedCard, cacheCard } from '@/services/cache'
 import { CARD_BACK_URL } from '@/services/scryfall'
@@ -41,6 +41,10 @@ export function useGameView() {
     const showScryXModal = ref(false)
     const scryXCount = ref<number | null>(null)
     const scryXInput = ref<HTMLInputElement | null>(null)
+    const showFreeformModal = ref(false)
+    const freeformText = ref('')
+    const freeformInput = ref<HTMLInputElement | null>(null)
+    const pendingFreeformCardId = ref<string | null>(null)
 
     watch(showDrawXModal, (val) => {
         if (val) {
@@ -51,6 +55,12 @@ export function useGameView() {
     watch(showScryXModal, (val) => {
         if (val) {
             nextTick(() => scryXInput.value?.focus())
+        }
+    })
+
+    watch(showFreeformModal, (val) => {
+        if (val) {
+            nextTick(() => freeformInput.value?.focus())
         }
     })
 
@@ -419,6 +429,35 @@ export function useGameView() {
         closeContextMenu()
     }
 
+    function addCounter(type: CounterType) {
+        if (!contextMenuCard.value) return
+        const card = game.findCard(contextMenuCard.value)
+        if (!card) return
+
+        const hasCounter = card.counters.some(c => c.type === type)
+
+        if (hasCounter) {
+            game.removeCounter(contextMenuCard.value, type)
+            closeContextMenu()
+        } else if (type === 'freeform') {
+            pendingFreeformCardId.value = contextMenuCard.value
+            closeContextMenu()
+            showFreeformModal.value = true
+        } else {
+            game.addCounter(contextMenuCard.value, type)
+            closeContextMenu()
+        }
+    }
+
+    function handleFreeformSubmit() {
+        if (pendingFreeformCardId.value && freeformText.value.trim()) {
+            game.addCounter(pendingFreeformCardId.value, 'freeform', freeformText.value.trim())
+        }
+        showFreeformModal.value = false
+        freeformText.value = ''
+        pendingFreeformCardId.value = null
+    }
+
     function closeContextMenu() {
         showContextMenu.value = false
         contextMenuCard.value = null
@@ -483,6 +522,11 @@ export function useGameView() {
         showScryXModal,
         scryXCount,
         scryXInput,
+        showFreeformModal,
+        freeformText,
+        freeformInput,
+        addCounter,
+        handleFreeformSubmit,
         loadTestCards,
         handleDragStart,
         handleDrop,

@@ -7,9 +7,10 @@ export type ZoneType =
     | 'exile'
     | 'reveal'
 
-export type CounterType = 'plusOne' | 'minusOne' | 'loyalty' | 'generic'
+export type CounterType = 'plusOne' | 'minusOne' | 'loyalty' | 'generic' | 'freeform'
 
 export interface Counter {
+    id: string
     type: CounterType
     count: number
     name?: string

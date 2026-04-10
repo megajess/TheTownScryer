@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import type { CardInstance, ZoneType } from '@/types/card'
+import type { CardInstance, CounterType, ZoneType } from '@/types/card'
 
 export const useGameStore = defineStore('game', () => {
     const library = ref<CardInstance[]>([])
@@ -152,6 +152,51 @@ export const useGameStore = defineStore('game', () => {
         moveCard(cardId, 'hand', 'library', position)
     }
 
+    function removeCounter(cardId: string, type: CounterType) {
+        const card = findCard(cardId)
+        if (!card) return
+        card.counters = card.counters.filter(c => c.type !== type)
+    }
+
+    function addCounter(cardId: string, type: CounterType, name?: string) {
+        const card = findCard(cardId)
+        if (!card) return
+
+        if (type === 'plusOne' || type === 'minusOne') {
+            const existing = card.counters.find(c => c.type === type)
+            if (existing) {
+                existing.count++
+            } else {
+                card.counters.push({ id: crypto.randomUUID(), type, count: 1 })
+            }
+        } else if (type === 'loyalty') {
+            if (!card.counters.find(c => c.type === 'loyalty')) {
+                card.counters.push({ id: crypto.randomUUID(), type, count: 1 })
+            }
+        } else {
+            card.counters.push({ id: crypto.randomUUID(), type, count: 1, name })
+        }
+    }
+
+    function incrementCounter(cardId: string, counterId: string) {
+        const card = findCard(cardId)
+        const counter = card?.counters.find(c => c.id === counterId)
+        if (counter) counter.count++
+    }
+
+    function decrementCounter(cardId: string, counterId: string) {
+        const card = findCard(cardId)
+        if (!card) return
+        const index = card.counters.findIndex(c => c.id === counterId)
+        if (index === -1) return
+        const counter = card.counters[index]!
+        if (counter.count <= 1) {
+            card.counters.splice(index, 1)
+        } else {
+            counter.count--
+        }
+    }
+
     function placeOnBattlefield(cardId: string, fromZone: ZoneType, x: number, y: number) {
         const card = findCard(cardId)
         if (!card) return
@@ -180,6 +225,10 @@ export const useGameStore = defineStore('game', () => {
         toggleTap,
         untapAll,
         setFaceDown,
+        addCounter,
+        removeCounter,
+        incrementCounter,
+        decrementCounter,
         scry,
         placeScryCard,
     }

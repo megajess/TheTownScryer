@@ -38,6 +38,11 @@ const {
     showScryXModal,
     scryXCount,
     scryXInput,
+    showFreeformModal,
+    freeformText,
+    freeformInput,
+    addCounter,
+    handleFreeformSubmit,
     contextMenuCard,
     loadTestCards,
     handleDragStart,
@@ -120,6 +125,42 @@ const {
                     @mouseleave="handleCardLeave" @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @contextmenu="handleContextMenu($event, card.id)">
                     <img :src="card.faceDown ? CARD_BACK_URL : card.imageUrl" :alt="card.name" loading="lazy" />
+                    <div v-if="card.counters.length" class="counter-overlays">
+                        <div class="counter-group counter-group--bottom-left">
+                            <div v-for="c in card.counters.filter(c => c.type === 'plusOne')" :key="c.id"
+                                class="counter counter--plus-one"
+                                @click.stop="game.incrementCounter(card.id, c.id)"
+                                @contextmenu.prevent.stop="game.decrementCounter(card.id, c.id)">
+                                +{{ c.count }}/+{{ c.count }}
+                            </div>
+                            <div v-for="c in card.counters.filter(c => c.type === 'minusOne')" :key="c.id"
+                                class="counter counter--minus-one"
+                                @click.stop="game.incrementCounter(card.id, c.id)"
+                                @contextmenu.prevent.stop="game.decrementCounter(card.id, c.id)">
+                                -{{ c.count }}/-{{ c.count }}
+                            </div>
+                        </div>
+                        <div class="counter-group counter-group--bottom-right">
+                            <div v-for="c in card.counters.filter(c => c.type === 'loyalty')" :key="c.id"
+                                class="counter counter--loyalty"
+                                @click.stop="game.incrementCounter(card.id, c.id)"
+                                @contextmenu.prevent.stop="game.decrementCounter(card.id, c.id)">
+                                {{ c.count }}
+                            </div>
+                        </div>
+                        <div class="counter-group counter-group--top-center">
+                            <div v-for="c in card.counters.filter(c => c.type === 'generic')" :key="c.id"
+                                class="counter counter--generic"
+                                @click.stop="game.incrementCounter(card.id, c.id)"
+                                @contextmenu.prevent.stop="game.decrementCounter(card.id, c.id)">
+                                {{ c.count }}
+                            </div>
+                            <div v-for="c in card.counters.filter(c => c.type === 'freeform')" :key="c.id"
+                                class="counter counter--freeform">
+                                {{ c.name }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -257,6 +298,18 @@ const {
             </div>
         </div>
 
+        <!-- Freeform Counter Modal -->
+        <div v-if="showFreeformModal" class="modal-overlay" @click.self="showFreeformModal = false">
+            <div class="modal-content">
+                <p>Counter label:</p>
+                <input ref="freeformInput" type="text" v-model="freeformText" @keyup.enter="handleFreeformSubmit" />
+                <div class="modal-buttons">
+                    <button @click="showFreeformModal = false">Cancel</button>
+                    <button @click="handleFreeformSubmit">Add</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Deck Loader Modal -->
         <div v-if="showLoadModal" class="modal-overlay" @click="showLoadModal = false">
             <div class="modal-content" @click.stop>
@@ -303,6 +356,16 @@ const {
                 <div v-if="game.findCard(contextMenuCard!)?.startsInCommandZone" class="context-menu-item"
                     @click="returnToCommandZone">
                     Return to Command Zone
+                </div>
+                <div class="context-menu-item has-submenu">
+                    Counters <span class="submenu-arrow">▶</span>
+                    <div class="context-submenu">
+                        <div class="context-menu-item" @click="addCounter('plusOne')">+1/+1</div>
+                        <div class="context-menu-item" @click="addCounter('minusOne')">-1/-1</div>
+                        <div class="context-menu-item" @click="addCounter('loyalty')">Loyalty</div>
+                        <div class="context-menu-item" @click="addCounter('generic')">Generic</div>
+                        <div class="context-menu-item" @click="addCounter('freeform')">Freeform</div>
+                    </div>
                 </div>
                 <div class="context-menu-item" @click="moveToGraveyard">
                     Move to Graveyard

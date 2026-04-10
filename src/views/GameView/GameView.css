@@ -298,6 +298,119 @@
     background: rgba(82, 183, 136, 0.3);
 }
 
+.context-menu-item.has-submenu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.submenu-arrow {
+    font-size: 0.6rem;
+    opacity: 0.7;
+}
+
+.context-submenu {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: -2px;
+    background: #1b4332;
+    border: 2px solid #52b788;
+    border-radius: 4px;
+    min-width: 120px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 2001;
+}
+
+.context-menu-item.has-submenu:hover .context-submenu {
+    display: block;
+}
+
+/* Counter overlays */
+
+.counter-overlays {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.counter-group {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.counter-group--bottom-left {
+    bottom: 0.3rem;
+    left: 0.3rem;
+    align-items: flex-start;
+}
+
+.counter-group--bottom-right {
+    bottom: 0.3rem;
+    right: 0.3rem;
+    align-items: flex-end;
+}
+
+.counter-group--top-center {
+    top: 28%;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+}
+
+.counter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    height: 20px;
+    border-radius: 10px;
+    font-size: 0.5rem;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    pointer-events: auto;
+    cursor: pointer;
+    user-select: none;
+}
+
+.counter--freeform {
+    pointer-events: none;
+    cursor: default;
+    background: #e9c46a;
+    color: #1b4332;
+    border-radius: 4px;
+    padding: 0 6px;
+    font-size: 0.45rem;
+}
+
+.counter--plus-one {
+    background: #2d9e5f;
+    color: #fff;
+}
+
+.counter--minus-one {
+    background: #c1121f;
+    color: #fff;
+}
+
+.counter--loyalty {
+    background: #1d6fa4;
+    color: #fff;
+    min-width: 20px;
+}
+
+.counter--generic {
+    background: #555;
+    color: #fff;
+    min-width: 20px;
+}
+
+
 .context-menu-overlay {
     position: fixed;
     top: 0;
