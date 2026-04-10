@@ -9,6 +9,7 @@ import ExpandIcon from '@/components/ExpandIcon.vue';
 import GitHubIcon from '@/components/GitHubIcon.vue'
 import ExternalLinkIcon from '@/components/ExternalLinkIcon.vue'
 import ControlButton from '@/components/ControlButton.vue'
+import HamburgerIcon from '@/components/HamburgerIcon.vue'
 
 
 const {
@@ -164,9 +165,9 @@ const {
                 <div v-for="card in game.battlefield" :key="card.id" class="card battlefield-card"
                     :class="{ 'is-tapped': card.tapped }" :style="{ left: card.x + 'px', top: card.y + 'px' }"
                     draggable="true" @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
-                    @mouseleave="handleCardLeave" @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
-                    @contextmenu="handleContextMenu($event, card.id)">
+                    @mouseleave="handleCardLeave" @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd">
                     <img :src="card.faceDown ? CARD_BACK_URL : card.imageUrl" :alt="card.name" loading="lazy" />
+                    <button class="card-menu-btn" @click.stop="handleContextMenu($event, card.id)"><HamburgerIcon /></button>
                     <div v-if="card.counters.length" class="counter-overlays">
                         <div class="counter-group counter-group--bottom-left">
                             <div v-for="c in card.counters.filter(c => c.type === 'plusOne')" :key="c.id"
@@ -268,11 +269,12 @@ const {
                     </div>
 
                     <div class="overlay-zone library-zone" @click="game.draw()" @mouseenter="isHoveringLibrary = true"
-                        @mouseleave="isHoveringLibrary = false" @contextmenu.prevent="handleLibraryContextMenu($event)">
+                        @mouseleave="isHoveringLibrary = false">
                         <LibraryIcon v-if="game.library.length === 0" class="zone-card-back" />
                         <img v-else :src="CARD_BACK_URL" alt="Library" class="zone-card-back" />
                         <span v-if="game.library.length > 0" class="overlay-zone-count">{{ game.library.length }}</span>
                         <span class="overlay-zone-label">Library</span>
+                        <button class="zone-menu-btn" @click.stop="handleLibraryContextMenu($event)"><HamburgerIcon /></button>
                     </div>
 
                     <div class="overlay-zone graveyard-zone" @dragover="handleDragOver"
@@ -364,9 +366,9 @@ const {
                     draggable="true"
                     @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
-                    @mouseleave="handleCardLeave"
-                    @contextmenu="handleContextMenu($event, card.id)">
+                    @mouseleave="handleCardLeave">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                    <button class="card-menu-btn" @click.stop="handleContextMenu($event, card.id)"><HamburgerIcon /></button>
                 </div>
             </div>
 
@@ -377,9 +379,9 @@ const {
                     draggable="true"
                     @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
-                    @mouseleave="handleCardLeave"
-                    @contextmenu="handleContextMenu($event, card.id)">
+                    @mouseleave="handleCardLeave">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                    <button class="card-menu-btn" @click.stop="handleContextMenu($event, card.id)"><HamburgerIcon /></button>
                 </div>
             </div>
 
@@ -390,9 +392,9 @@ const {
                     draggable="true"
                     @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
                     @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
-                    @mouseleave="handleCardLeave"
-                    @contextmenu="handleContextMenu($event, card.id)">
+                    @mouseleave="handleCardLeave">
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                    <button class="card-menu-btn" @click.stop="handleContextMenu($event, card.id)"><HamburgerIcon /></button>
                     <span v-if="card.faceDown" class="facedown-label" @click.stop="game.setFaceDown(card.id, false)">Facedown</span>
                 </div>
             </div>

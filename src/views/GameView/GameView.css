@@ -292,6 +292,35 @@
     transition: transform 0.2s ease;
 }
 
+.card-menu-btn {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 24px;
+    height: 24px;
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #d8f3dc;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.card:hover .card-menu-btn {
+    opacity: 1;
+}
+
+.card-menu-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
 .card.is-tapped {
     transform: rotate(90deg);
 }
@@ -682,6 +711,35 @@
     border-radius: 8px;
     padding: 1rem;
     border: 2px solid #74c69d;
+}
+
+.zone-menu-btn {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 20px;
+    height: 20px;
+    padding: 3px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #d8f3dc;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.overlay-zone:hover .zone-menu-btn {
+    opacity: 1;
+}
+
+.zone-menu-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 .overlay-zone {
