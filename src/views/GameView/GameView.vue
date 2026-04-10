@@ -57,6 +57,19 @@ const {
     showMulliganButtons,
     keepHand,
     mulligan,
+    isSearching,
+    searchTab,
+    searchFilter,
+    shuffleAfterSearch,
+    isShuffling,
+    shuffleWithLabel,
+    filteredLibraryCards,
+    showLibraryMenu,
+    libraryMenuPosition,
+    handleLibraryContextMenu,
+    closeLibraryMenu,
+    startSearch,
+    stopSearch,
     contextMenuCard,
     handleDragStart,
     handleDrop,
@@ -180,6 +193,12 @@ const {
             <!-- Scrying Label -->
             <div v-if="game.hand.some(c => c.isScrying)" class="scrying-label">Scrying...</div>
 
+            <!-- Searching Label -->
+            <div v-if="isSearching" class="scrying-label searching-label">Searching...</div>
+
+            <!-- Shuffling Label -->
+            <div v-if="isShuffling" class="scrying-label shuffling-label">Shuffling...</div>
+
             <!-- Controls Overlay -->
             <div class="controls-overlay">
                 <button @click="game.untapAll()">Untap</button>
@@ -233,7 +252,7 @@ const {
                     </div>
 
                     <div class="overlay-zone library-zone" @click="game.draw()" @mouseenter="isHoveringLibrary = true"
-                        @mouseleave="isHoveringLibrary = false">
+                        @mouseleave="isHoveringLibrary = false" @contextmenu.prevent="handleLibraryContextMenu($event)">
                         <LibraryIcon v-if="game.library.length === 0" class="zone-card-back" />
                         <img v-else :src="CARD_BACK_URL" alt="Library" class="zone-card-back" />
                         <span v-if="game.library.length > 0" class="overlay-zone-count">{{ game.library.length }}</span>
@@ -278,7 +297,35 @@ const {
                 }">
                 </div>
             </div>
-            <div class="hand-cards">
+            <!-- Search Tab Bar -->
+            <div v-if="isSearching" class="search-bar">
+                <div class="search-tabs">
+                    <button class="search-tab" :class="{ active: searchTab === 'hand' }" @click="searchTab = 'hand'">Hand</button>
+                    <button class="search-tab" :class="{ active: searchTab === 'search' }" @click="searchTab = 'search'">Search</button>
+                </div>
+                <input v-if="searchTab === 'search'" v-model="searchFilter" type="text" placeholder="Filter library..." class="search-filter" autofocus />
+                <label class="search-shuffle-check">
+                    <input type="checkbox" v-model="shuffleAfterSearch" />
+                    Shuffle
+                </label>
+                <button class="search-done-btn" @click="stopSearch">Done</button>
+            </div>
+
+            <!-- Search Results -->
+            <div v-if="isSearching && searchTab === 'search'" class="hand-cards">
+                <div v-for="card in filteredLibraryCards" :key="card.id" class="card"
+                    :class="{ dragging: draggedCardId === card.id }"
+                    draggable="true"
+                    @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
+                    @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
+                    @mouseleave="handleCardLeave"
+                    @contextmenu="handleContextMenu($event, card.id)">
+                    <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                </div>
+            </div>
+
+            <!-- Hand (shown normally, or when on Hand tab during search) -->
+            <div v-if="!isSearching || searchTab === 'hand'" class="hand-cards">
                 <div v-for="card in game.hand" :key="card.id" class="card"
                     :class="{ dragging: draggedCardId === card.id, 'is-scrying': card.isScrying }"
                     :draggable="!card.isScrying"
@@ -412,6 +459,25 @@ const {
                 </div>
             </template>
 
+            <!-- Library search options -->
+            <template v-if="game.findCard(contextMenuCard!)?.zone === 'library'">
+                <div class="context-menu-item" @click="moveToGraveyard">
+                    Move to Graveyard
+                </div>
+                <div class="context-menu-item" @click="moveToExile">
+                    Exile
+                </div>
+                <div class="context-menu-item" @click="returnToHand">
+                    Move to Hand
+                </div>
+                <div class="context-menu-item" @click="moveToLibrary('top')">
+                    Move to top of library
+                </div>
+                <div class="context-menu-item" @click="moveToLibrary('bottom')">
+                    Move to bottom of library
+                </div>
+            </template>
+
             <!-- Battlefield options -->
             <template v-if="game.findCard(contextMenuCard!)?.zone === 'battlefield'">
                 <div class="context-menu-item" @click="toggleTapCard">
@@ -459,6 +525,14 @@ const {
 
         <!-- Click outside to close context menu -->
         <div v-if="showContextMenu" class="context-menu-overlay" @click="closeContextMenu"></div>
+
+        <!-- Library Context Menu -->
+        <div v-if="showLibraryMenu" class="context-menu"
+            :style="{ left: libraryMenuPosition.x + 'px', top: libraryMenuPosition.y + 'px' }" @click.stop>
+            <div class="context-menu-item" @click="startSearch">Search</div>
+            <div class="context-menu-item" @click="shuffleWithLabel(); closeLibraryMenu()">Shuffle</div>
+        </div>
+        <div v-if="showLibraryMenu" class="context-menu-overlay" @click="closeLibraryMenu"></div>
     </div>
 </template>
 

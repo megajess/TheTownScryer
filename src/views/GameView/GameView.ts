@@ -79,6 +79,19 @@ export function useGameView() {
     })
     const showMulliganButtons = ref(false)
     const mulliganCount = ref(0)
+    const isSearching = ref(false)
+    const searchTab = ref<'hand' | 'search'>('search')
+    const searchFilter = ref('')
+    const shuffleAfterSearch = ref(true)
+    const isShuffling = ref(false)
+    const showLibraryMenu = ref(false)
+    const libraryMenuPosition = ref({ x: 0, y: 0 })
+
+    const filteredLibraryCards = computed(() => {
+        const q = searchFilter.value.trim().toLowerCase()
+        if (!q) return game.library
+        return game.library.filter(c => c.name.toLowerCase().includes(q))
+    })
 
     const showFreeformModal = ref(false)
     const freeformText = ref('')
@@ -247,7 +260,7 @@ export function useGameView() {
 
         game.loadLibrary(libraryCards)
         game.loadCommandZone(commanderCards)
-        game.shuffleLibrary()
+        shuffleWithLabel()
         game.draw(7)
 
         loading.value = false
@@ -269,7 +282,7 @@ export function useGameView() {
 
     function mulligan() {
         game.returnHandToLibrary()
-        game.shuffleLibrary()
+        shuffleWithLabel()
         mulliganCount.value++
         game.draw(Math.max(0, 7 - mulliganCount.value))
     }
@@ -525,6 +538,35 @@ export function useGameView() {
         contextMenuCard.value = null
     }
 
+    function handleLibraryContextMenu(event: MouseEvent) {
+        event.preventDefault()
+        libraryMenuPosition.value = { x: event.clientX, y: event.clientY }
+        showLibraryMenu.value = true
+    }
+
+    function closeLibraryMenu() {
+        showLibraryMenu.value = false
+    }
+
+    function shuffleWithLabel() {
+        game.shuffleLibrary()
+        isShuffling.value = true
+        setTimeout(() => { isShuffling.value = false }, 1500)
+    }
+
+    function startSearch() {
+        isSearching.value = true
+        searchTab.value = 'search'
+        searchFilter.value = ''
+        closeLibraryMenu()
+    }
+
+    function stopSearch() {
+        if (shuffleAfterSearch.value) shuffleWithLabel()
+        isSearching.value = false
+        searchFilter.value = ''
+    }
+
     function handleCardHover(card: CardInstance) {
         hoveredCard.value = card
     }
@@ -603,6 +645,19 @@ export function useGameView() {
         showMulliganButtons,
         keepHand,
         mulligan,
+        isSearching,
+        searchTab,
+        searchFilter,
+        shuffleAfterSearch,
+        isShuffling,
+        shuffleWithLabel,
+        filteredLibraryCards,
+        showLibraryMenu,
+        libraryMenuPosition,
+        handleLibraryContextMenu,
+        closeLibraryMenu,
+        startSearch,
+        stopSearch,
         handleDragStart,
         handleDrop,
         handleDragEnd,
