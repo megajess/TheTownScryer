@@ -278,13 +278,14 @@ const {
                     </div>
 
                     <div class="overlay-zone graveyard-zone" @dragover="handleDragOver"
-                        @drop="handleDrop($event, 'graveyard')" @contextmenu.prevent="handleGraveyardContextMenu($event)">
+                        @drop="handleDrop($event, 'graveyard')">
                         <GraveyardIcon v-if="game.graveyard.length === 0" class="zone-card-back" />
                         <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
                             class="zone-card-back" />
                         <span v-if="game.graveyard.length > 0" class="overlay-zone-count">{{ game.graveyard.length
                         }}</span>
                         <span class="overlay-zone-label">Graveyard</span>
+                        <button class="zone-menu-btn" @click.stop="handleGraveyardContextMenu($event)"><HamburgerIcon /></button>
                     </div>
 
                     <div class="overlay-zone exile-zone" @dragover="handleDragOver" @drop="handleDrop($event, 'exile')">
