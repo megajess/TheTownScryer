@@ -122,6 +122,47 @@
     overflow: hidden;
 }
 
+.mulligan-bar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: rgba(27, 67, 50, 0.6);
+    border-bottom: 1px solid #2d6a4f;
+    flex-shrink: 0;
+}
+
+.mulligan-btn {
+    padding: 0.3rem 1rem;
+    border-radius: 4px;
+    border: 1px solid;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+
+.mulligan-btn--keep {
+    background: transparent;
+    border-color: #74c69d;
+    color: #74c69d;
+}
+
+.mulligan-btn--keep:hover {
+    background: #74c69d;
+    color: #1b4332;
+}
+
+.mulligan-btn--mulligan {
+    background: transparent;
+    border-color: #e07a5f;
+    color: #e07a5f;
+}
+
+.mulligan-btn--mulligan:hover {
+    background: #e07a5f;
+    color: #fff;
+}
+
 .hand-zone h3 {
     margin: 0 0 0.5rem 0;
     color: #95d5b2;

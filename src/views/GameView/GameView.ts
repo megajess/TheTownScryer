@@ -77,6 +77,9 @@ export function useGameView() {
         if (!q) return groupedEntries.value
         return groupedEntries.value.filter(e => e.name.toLowerCase().includes(q))
     })
+    const showMulliganButtons = ref(false)
+    const mulliganCount = ref(0)
+
     const showFreeformModal = ref(false)
     const freeformText = ref('')
     const freeformInput = ref<HTMLInputElement | null>(null)
@@ -245,9 +248,12 @@ export function useGameView() {
         game.loadLibrary(libraryCards)
         game.loadCommandZone(commanderCards)
         game.shuffleLibrary()
+        game.draw(7)
 
         loading.value = false
         showLoadModal.value = false
+        showMulliganButtons.value = true
+        mulliganCount.value = 0
         deckText.value = ''
         parsedEntries.value = []
         selectedCommanderNames.value = []
@@ -255,6 +261,17 @@ export function useGameView() {
 
         await nextTick()
         resetView()
+    }
+
+    function keepHand() {
+        showMulliganButtons.value = false
+    }
+
+    function mulligan() {
+        game.returnHandToLibrary()
+        game.shuffleLibrary()
+        mulliganCount.value++
+        game.draw(Math.max(0, 7 - mulliganCount.value))
     }
 
     function updateDimensions() {
@@ -583,6 +600,9 @@ export function useGameView() {
         confirmFilter,
         toggleCommanderSelection,
         confirmLoadDeck,
+        showMulliganButtons,
+        keepHand,
+        mulligan,
         handleDragStart,
         handleDrop,
         handleDragEnd,

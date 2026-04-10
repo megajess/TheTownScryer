@@ -54,6 +54,9 @@ const {
     confirmFilter,
     toggleCommanderSelection,
     confirmLoadDeck,
+    showMulliganButtons,
+    keepHand,
+    mulligan,
     contextMenuCard,
     handleDragStart,
     handleDrop,
@@ -260,6 +263,12 @@ const {
 
         <!-- Hand -->
         <div class="hand-zone">
+            <!-- Mulligan Buttons -->
+            <div v-if="showMulliganButtons" class="mulligan-bar">
+                <button class="mulligan-btn mulligan-btn--keep" @click="keepHand">Keep</button>
+                <button class="mulligan-btn mulligan-btn--mulligan" @click="mulligan">Mulligan</button>
+            </div>
+
             <!-- Card Magnifier -->
             <div v-if="hoveredCard && isShiftPressed" class="card-magnifier">
                 <div class="magnifier-lens" :style="{

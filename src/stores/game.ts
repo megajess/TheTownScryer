@@ -197,6 +197,14 @@ export const useGameStore = defineStore('game', () => {
         }
     }
 
+    function returnHandToLibrary() {
+        const cards = hand.value.splice(0)
+        for (const card of cards) {
+            card.zone = 'library'
+            library.value.push(card)
+        }
+    }
+
     function placeOnBattlefield(cardId: string, fromZone: ZoneType, x: number, y: number) {
         const card = findCard(cardId)
         if (!card) return
@@ -229,6 +237,7 @@ export const useGameStore = defineStore('game', () => {
         removeCounter,
         incrementCounter,
         decrementCounter,
+        returnHandToLibrary,
         scry,
         placeScryCard,
     }
