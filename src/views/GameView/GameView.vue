@@ -404,6 +404,12 @@ const {
                 <div class="context-menu-item" @click="game.discard(contextMenuCard!); closeContextMenu()">
                     Discard
                 </div>
+                <div class="context-menu-item" @click="moveToLibrary('top')">
+                    Move to top of library
+                </div>
+                <div class="context-menu-item" @click="moveToLibrary('bottom')">
+                    Move to bottom of library
+                </div>
             </template>
 
             <!-- Battlefield options -->
