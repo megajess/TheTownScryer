@@ -1,9 +1,9 @@
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import type { CardInstance, CounterType, ZoneType } from '@/types/card'
-import { fetchCardByName, getImageUrl } from '@/services/scryfall'
-import { getCachedCard, cacheCard } from '@/services/cache'
+import { fetchCardsByNames, getImageUrl } from '@/services/scryfall'
 import { CARD_BACK_URL } from '@/services/scryfall'
+import { parseDeckList, type ParsedDeckEntry } from '@/services/deckParser'
 
 const _cardBackPreload = new Image()
 _cardBackPreload.src = CARD_BACK_URL
@@ -41,6 +41,43 @@ export function useGameView() {
     const showScryXModal = ref(false)
     const scryXCount = ref<number | null>(null)
     const scryXInput = ref<HTMLInputElement | null>(null)
+    const deckText = ref('')
+    const loadError = ref<string | null>(null)
+    const isCommanderDeck = ref(false)
+    const showConfirmStep = ref(false)
+    const parsedEntries = ref<ParsedDeckEntry[]>([])
+    const selectedCommanderNames = ref<string[]>([])
+    const confirmFilter = ref('')
+
+    const needsCommanderSelection = computed(() =>
+        isCommanderDeck.value && !parsedEntries.value.some(e => e.isCommander)
+    )
+
+    const groupedEntries = computed(() => {
+        const groups = new Map<string, { name: string, quantity: number, isCommander: boolean }>()
+        for (const entry of parsedEntries.value) {
+            const existing = groups.get(entry.name)
+            if (existing) {
+                existing.quantity += entry.quantity
+            } else {
+                groups.set(entry.name, { name: entry.name, quantity: entry.quantity, isCommander: entry.isCommander })
+            }
+        }
+        return [...groups.values()].sort((a, b) => {
+            if (a.isCommander !== b.isCommander) return a.isCommander ? -1 : 1
+            return a.name.localeCompare(b.name)
+        })
+    })
+
+    const totalCardCount = computed(() =>
+        parsedEntries.value.reduce((sum, e) => sum + e.quantity, 0)
+    )
+
+    const filteredGroupedEntries = computed(() => {
+        const q = confirmFilter.value.trim().toLowerCase()
+        if (!q) return groupedEntries.value
+        return groupedEntries.value.filter(e => e.name.toLowerCase().includes(q))
+    })
     const showFreeformModal = ref(false)
     const freeformText = ref('')
     const freeformInput = ref<HTMLInputElement | null>(null)
@@ -130,50 +167,58 @@ export function useGameView() {
         }
     }
 
-    async function loadTestCards(numberOfCommanders: number) {
-        loading.value = true
-        const cardNames = ['Sol Ring', 'Command Tower', 'Path to Exile']
-        const loadedCards: CardInstance[] = []
-        const loadedCommanderCards: CardInstance[] = []
-
-        if (numberOfCommanders > 0) {
-            cardNames.push('The First Sliver')
-
-            if (numberOfCommanders === 2) {
-                cardNames.push('Cultist of the Absolute')
-            }
+    function previewDeck() {
+        loadError.value = null
+        const entries = parseDeckList(deckText.value)
+        if (entries.length === 0) {
+            loadError.value = 'No cards found. Make sure you pasted a valid deck list.'
+            return
         }
+        parsedEntries.value = entries
+        selectedCommanderNames.value = []
+        showConfirmStep.value = true
+    }
 
-        for (const name of cardNames) {
-            let scryfallCard = await getCachedCard(name)
+    function goBackToDeckInput() {
+        showConfirmStep.value = false
+        confirmFilter.value = ''
+        loadError.value = null
+    }
 
+    function toggleCommanderSelection(name: string) {
+        const idx = selectedCommanderNames.value.indexOf(name)
+        if (idx >= 0) {
+            selectedCommanderNames.value.splice(idx, 1)
+        } else if (selectedCommanderNames.value.length < 2) {
+            selectedCommanderNames.value.push(name)
+        }
+    }
+
+    async function confirmLoadDeck() {
+        loading.value = true
+        loadError.value = null
+
+        const commanderNameSet = new Set(selectedCommanderNames.value)
+        const entries = parsedEntries.value.map(e => ({
+            ...e,
+            isCommander: e.isCommander || (needsCommanderSelection.value && commanderNameSet.has(e.name)),
+        }))
+
+        const uniqueNames = [...new Set(entries.map(e => e.name))]
+        const scryfallCards = await fetchCardsByNames(uniqueNames)
+
+        const libraryCards: CardInstance[] = []
+        const commanderCards: CardInstance[] = []
+
+        for (const entry of entries) {
+            const scryfallCard = scryfallCards.get(entry.name)
             if (!scryfallCard) {
-                scryfallCard = await fetchCardByName(name)
-
-                if (scryfallCard) {
-                    await cacheCard(scryfallCard)
-                }
+                console.warn(`Could not find card: ${entry.name}`)
+                continue
             }
-
-            if (scryfallCard) {
-                if (scryfallCard.name != 'The First Sliver' && scryfallCard.name != 'Cultist of the Absolute') {
-                    const cardInstance: CardInstance = {
-                        id: crypto.randomUUID(),
-                        cardId: scryfallCard.id,
-                        name: scryfallCard.name,
-                        imageUrl: getImageUrl(scryfallCard),
-                        zone: 'library',
-                        tapped: false,
-                        faceDown: false,
-                        startsInCommandZone: false,
-                        isToken: false,
-                        counters: [],
-                        isFlipped: false,
-                    }
-
-                    loadedCards.push(cardInstance)
-                } else {
-                    const commanderCardInstance: CardInstance = {
+            for (let i = 0; i < entry.quantity; i++) {
+                if (entry.isCommander) {
+                    commanderCards.push({
                         id: crypto.randomUUID(),
                         cardId: scryfallCard.id,
                         name: scryfallCard.name,
@@ -185,31 +230,39 @@ export function useGameView() {
                         isToken: false,
                         counters: [],
                         isFlipped: false,
-                    }
-
-                    loadedCommanderCards.push(commanderCardInstance)
+                    })
+                } else {
+                    libraryCards.push({
+                        id: crypto.randomUUID(),
+                        cardId: scryfallCard.id,
+                        name: scryfallCard.name,
+                        imageUrl: getImageUrl(scryfallCard),
+                        zone: 'library',
+                        tapped: false,
+                        faceDown: false,
+                        startsInCommandZone: false,
+                        isToken: false,
+                        counters: [],
+                        isFlipped: false,
+                    })
                 }
             }
         }
 
-        game.loadLibrary(loadedCards)
-        game.loadCommandZone(loadedCommanderCards)
+        game.loadLibrary(libraryCards)
+        game.loadCommandZone(commanderCards)
         game.shuffleLibrary()
+
         loading.value = false
         showLoadModal.value = false
+        showConfirmStep.value = false
+        deckText.value = ''
+        parsedEntries.value = []
+        selectedCommanderNames.value = []
+        confirmFilter.value = ''
 
         await nextTick()
-
         resetView()
-    }
-
-    async function testFetchCard() {
-        const card = await fetchCardByName('Sol Ring')
-
-        if (card) {
-            console.log('Fetched card:', card)
-            console.log('Image URL:', getImageUrl(card))
-        }
     }
 
     function updateDimensions() {
@@ -527,7 +580,20 @@ export function useGameView() {
         freeformInput,
         addCounter,
         handleFreeformSubmit,
-        loadTestCards,
+        deckText,
+        loadError,
+        isCommanderDeck,
+        showConfirmStep,
+        groupedEntries,
+        filteredGroupedEntries,
+        totalCardCount,
+        needsCommanderSelection,
+        selectedCommanderNames,
+        confirmFilter,
+        previewDeck,
+        goBackToDeckInput,
+        toggleCommanderSelection,
+        confirmLoadDeck,
         handleDragStart,
         handleDrop,
         handleDragEnd,

@@ -119,7 +119,7 @@
     border: 2px solid #74c69d;
     border-radius: 8px;
     padding: 1rem;
-    overflow-x: visible;
+    overflow: hidden;
 }
 
 .hand-zone h3 {
@@ -132,6 +132,9 @@
     min-height: 214.617px;
     display: flex;
     gap: 0.5rem;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 0.5rem;
 }
 
 .card-magnifier {
@@ -265,6 +268,117 @@
 .modal-content button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.deck-input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 220px;
+    padding: 0.5rem 0.75rem;
+    background: #081c15;
+    border: 1px solid #52b788;
+    border-radius: 4px;
+    color: #d8f3dc;
+    font-size: 0.75rem;
+    font-family: monospace;
+    resize: vertical;
+}
+
+.deck-input::placeholder {
+    color: #52b788;
+    opacity: 0.5;
+}
+
+.load-error {
+    color: #e63946;
+    font-size: 0.75rem;
+    margin: 0.25rem 0 0;
+}
+
+.commander-check {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #95d5b2;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.card-count {
+    font-size: 0.8rem;
+    font-weight: normal;
+    opacity: 0.7;
+}
+
+.confirm-hint {
+    font-size: 0.75rem;
+    color: #95d5b2;
+    margin: 0 0 0.5rem;
+}
+
+.confirm-filter {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.35rem 0.6rem;
+    margin-bottom: 0.4rem;
+    background: #081c15;
+    border: 1px solid #2d6a4f;
+    border-radius: 4px;
+    color: #d8f3dc;
+    font-size: 0.75rem;
+}
+
+.confirm-filter::placeholder {
+    color: #52b788;
+    opacity: 0.6;
+}
+
+.card-confirm-list {
+    max-height: 340px;
+    overflow-y: auto;
+    border: 1px solid #2d6a4f;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.card-confirm-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.72rem;
+    color: #d8f3dc;
+    cursor: default;
+    border-bottom: 1px solid #1b4332;
+}
+
+.card-confirm-item:last-child {
+    border-bottom: none;
+}
+
+.card-confirm-item:hover {
+    background: rgba(82, 183, 136, 0.1);
+}
+
+.card-confirm-item.is-commander {
+    color: #95d5b2;
+    font-weight: bold;
+}
+
+.commander-pip {
+    color: #74c69d;
+    font-size: 0.65rem;
+}
+
+.card-confirm-name {
+    flex: 1;
+}
+
+.card-confirm-qty {
+    color: #52b788;
+    font-size: 0.65rem;
 }
 
 .card.dragging {

@@ -43,8 +43,21 @@ const {
     freeformInput,
     addCounter,
     handleFreeformSubmit,
+    deckText,
+    loadError,
+    isCommanderDeck,
+    showConfirmStep,
+    groupedEntries,
+    filteredGroupedEntries,
+    totalCardCount,
+    needsCommanderSelection,
+    selectedCommanderNames,
+    confirmFilter,
+    previewDeck,
+    goBackToDeckInput,
+    toggleCommanderSelection,
+    confirmLoadDeck,
     contextMenuCard,
-    loadTestCards,
     handleDragStart,
     handleDrop,
     handleDragEnd,
@@ -311,18 +324,64 @@ const {
         </div>
 
         <!-- Deck Loader Modal -->
-        <div v-if="showLoadModal" class="modal-overlay" @click="showLoadModal = false">
+        <div v-if="showLoadModal" class="modal-overlay" @click.self="!loading && (showLoadModal = false)">
             <div class="modal-content" @click.stop>
-                <h2>Load Deck</h2>
-                <p v-if="loading">Loading cards...</p>
-                <p v-else>Load test cards to start the game</p>
-                <button class="load-button" @click="loadTestCards(1)" :disabled="loading">
-                    {{ loading ? 'Loading...' : 'Load Test Cards w/1 Commander' }}
-                </button>
-                <button class="load-button" @click="loadTestCards(2)" :disabled="loading">
-                    {{ loading ? 'Loading...' : 'Load Test Cards w/2 Commanders' }}
-                </button>
-                <button @click="showLoadModal = false">Cancel</button>
+
+                <!-- Step 1: Paste deck list -->
+                <template v-if="!showConfirmStep">
+                    <h2>Load Deck</h2>
+                    <p>Paste your deck list below.<br><small>In Moxfield: Export → Text or MTGO format</small></p>
+                    <textarea
+                        v-model="deckText"
+                        placeholder="// Commander&#10;1 Atraxa, Praetors' Voice&#10;&#10;// Deck&#10;1 Sol Ring&#10;..."
+                        class="deck-input"
+                    />
+                    <label class="commander-check">
+                        <input type="checkbox" v-model="isCommanderDeck" />
+                        Commander deck
+                    </label>
+                    <p v-if="loadError" class="load-error">{{ loadError }}</p>
+                    <div class="modal-buttons">
+                        <button @click="showLoadModal = false">Cancel</button>
+                        <button @click="previewDeck" :disabled="!deckText.trim()">Next</button>
+                    </div>
+                </template>
+
+                <!-- Step 2: Confirm card list -->
+                <template v-else>
+                    <h2>Confirm Deck <span class="card-count">({{ totalCardCount }} cards)</span></h2>
+                    <p v-if="needsCommanderSelection" class="confirm-hint">
+                        Select up to 2 commanders:
+                    </p>
+                    <input
+                        v-model="confirmFilter"
+                        type="text"
+                        placeholder="Filter cards..."
+                        class="confirm-filter"
+                    />
+                    <div class="card-confirm-list">
+                        <label v-for="entry in filteredGroupedEntries" :key="entry.name" class="card-confirm-item"
+                            :class="{ 'is-commander': entry.isCommander || selectedCommanderNames.includes(entry.name) }">
+                            <input
+                                v-if="needsCommanderSelection && !entry.isCommander"
+                                type="checkbox"
+                                :checked="selectedCommanderNames.includes(entry.name)"
+                                :disabled="!selectedCommanderNames.includes(entry.name) && selectedCommanderNames.length >= 2"
+                                @change="toggleCommanderSelection(entry.name)"
+                            />
+                            <span v-else-if="entry.isCommander" class="commander-pip">★</span>
+                            <span class="card-confirm-name">{{ entry.name }}</span>
+                            <span v-if="entry.quantity > 1" class="card-confirm-qty">×{{ entry.quantity }}</span>
+                        </label>
+                    </div>
+                    <div class="modal-buttons">
+                        <button @click="goBackToDeckInput">Back</button>
+                        <button @click="confirmLoadDeck" :disabled="loading">
+                            {{ loading ? 'Loading...' : 'Load Deck' }}
+                        </button>
+                    </div>
+                </template>
+
             </div>
         </div>
 
