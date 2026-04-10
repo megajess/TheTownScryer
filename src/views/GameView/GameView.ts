@@ -283,10 +283,13 @@ export function useGameView() {
 
         const w = Math.round(scaledWidth)
         const h = Math.round(scaledHeight)
+        const dpr = window.devicePixelRatio || 1
 
         const canvas = document.createElement('canvas')
-        canvas.width = w
-        canvas.height = h
+        canvas.width = w * dpr
+        canvas.height = h * dpr
+        canvas.style.width = w + 'px'
+        canvas.style.height = h + 'px'
         canvas.style.position = 'fixed'
         canvas.style.top = '-9999px'
         canvas.style.left = '-9999px'
@@ -294,6 +297,7 @@ export function useGameView() {
         const ctx = canvas.getContext('2d')
         if (!ctx) return null
 
+        ctx.scale(dpr, dpr)
         ctx.drawImage(sourceImg, 0, 0, w, h)
 
         document.body.appendChild(canvas)
