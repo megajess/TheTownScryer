@@ -69,6 +69,16 @@ const {
     shuffleAfterSearch,
     isShuffling,
     shuffleWithLabel,
+    isGraveyardSearching,
+    graveyardTab,
+    graveyardFilter,
+    filteredGraveyardCards,
+    showGraveyardMenu,
+    graveyardMenuPosition,
+    handleGraveyardContextMenu,
+    closeGraveyardMenu,
+    startGraveyardSearch,
+    stopGraveyardSearch,
     filteredLibraryCards,
     showLibraryMenu,
     libraryMenuPosition,
@@ -266,7 +276,7 @@ const {
                     </div>
 
                     <div class="overlay-zone graveyard-zone" @dragover="handleDragOver"
-                        @drop="handleDrop($event, 'graveyard')">
+                        @drop="handleDrop($event, 'graveyard')" @contextmenu.prevent="handleGraveyardContextMenu($event)">
                         <GraveyardIcon v-if="game.graveyard.length === 0" class="zone-card-back" />
                         <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
                             class="zone-card-back" />
@@ -325,6 +335,16 @@ const {
                 <button class="search-done-btn" @click="stopSearch">Done</button>
             </div>
 
+            <!-- Graveyard Search Tab Bar -->
+            <div v-else-if="isGraveyardSearching" class="search-bar">
+                <div class="search-tabs">
+                    <button class="search-tab" :class="{ active: graveyardTab === 'hand' }" @click="graveyardTab = 'hand'">Hand</button>
+                    <button class="search-tab" :class="{ active: graveyardTab === 'graveyard' }" @click="graveyardTab = 'graveyard'">Graveyard</button>
+                </div>
+                <input v-if="graveyardTab === 'graveyard'" v-model="graveyardFilter" type="text" placeholder="Filter graveyard..." class="search-filter" autofocus />
+                <button class="search-done-btn" @click="stopGraveyardSearch">Done</button>
+            </div>
+
             <!-- Scry Cards -->
             <div v-if="game.hand.some(c => c.isScrying) && scryTab === 'scry'" class="hand-cards">
                 <div v-for="card in game.hand.filter(c => c.isScrying)" :key="card.id" class="card is-scrying"
@@ -337,7 +357,7 @@ const {
                 </div>
             </div>
 
-            <!-- Search Results -->
+            <!-- Library Search Results -->
             <div v-else-if="isSearching && searchTab === 'search'" class="hand-cards">
                 <div v-for="card in filteredLibraryCards" :key="card.id" class="card"
                     :class="{ dragging: draggedCardId === card.id }"
@@ -350,8 +370,21 @@ const {
                 </div>
             </div>
 
+            <!-- Graveyard Search Results -->
+            <div v-else-if="isGraveyardSearching && graveyardTab === 'graveyard'" class="hand-cards">
+                <div v-for="card in filteredGraveyardCards" :key="card.id" class="card"
+                    :class="{ dragging: draggedCardId === card.id }"
+                    draggable="true"
+                    @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd"
+                    @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
+                    @mouseleave="handleCardLeave"
+                    @contextmenu="handleContextMenu($event, card.id)">
+                    <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
+                </div>
+            </div>
+
             <!-- Hand -->
-            <div v-else class="hand-cards">
+            <div v-else-if="!isGraveyardSearching || graveyardTab === 'hand'" class="hand-cards">
                 <div v-for="card in game.hand.filter(c => !c.isScrying)" :key="card.id" class="card"
                     :class="{ dragging: draggedCardId === card.id }"
                     draggable="true"
@@ -493,6 +526,22 @@ const {
                 </div>
             </template>
 
+            <!-- Graveyard options -->
+            <template v-if="game.findCard(contextMenuCard!)?.zone === 'graveyard'">
+                <div class="context-menu-item" @click="returnToHand">
+                    Return to Hand
+                </div>
+                <div class="context-menu-item" @click="moveToLibrary('top')">
+                    Move to top of library
+                </div>
+                <div class="context-menu-item" @click="moveToLibrary('bottom')">
+                    Move to bottom of library
+                </div>
+                <div class="context-menu-item" @click="moveToExile">
+                    Exile
+                </div>
+            </template>
+
             <!-- Library search options -->
             <template v-if="game.findCard(contextMenuCard!)?.zone === 'library'">
                 <div class="context-menu-item" @click="moveToGraveyard">
@@ -559,6 +608,13 @@ const {
 
         <!-- Click outside to close context menu -->
         <div v-if="showContextMenu" class="context-menu-overlay" @click="closeContextMenu"></div>
+
+        <!-- Graveyard Context Menu -->
+        <div v-if="showGraveyardMenu" class="context-menu"
+            :style="{ left: graveyardMenuPosition.x + 'px', top: graveyardMenuPosition.y + 'px' }" @click.stop>
+            <div class="context-menu-item" @click="startGraveyardSearch">Search</div>
+        </div>
+        <div v-if="showGraveyardMenu" class="context-menu-overlay" @click="closeGraveyardMenu"></div>
 
         <!-- Library Context Menu -->
         <div v-if="showLibraryMenu" class="context-menu"

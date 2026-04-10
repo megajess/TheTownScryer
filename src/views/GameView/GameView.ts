@@ -94,6 +94,18 @@ export function useGameView() {
         return game.library.filter(c => c.name.toLowerCase().includes(q))
     })
 
+    const isGraveyardSearching = ref(false)
+    const graveyardTab = ref<'hand' | 'graveyard'>('graveyard')
+    const graveyardFilter = ref('')
+    const showGraveyardMenu = ref(false)
+    const graveyardMenuPosition = ref({ x: 0, y: 0 })
+
+    const filteredGraveyardCards = computed(() => {
+        const q = graveyardFilter.value.trim().toLowerCase()
+        if (!q) return game.graveyard
+        return game.graveyard.filter(c => c.name.toLowerCase().includes(q))
+    })
+
     const showMillXModal = ref(false)
     const millXCount = ref<number | null>(null)
     const millXInput = ref<HTMLInputElement | null>(null)
@@ -594,6 +606,28 @@ export function useGameView() {
         searchFilter.value = ''
     }
 
+    function handleGraveyardContextMenu(event: MouseEvent) {
+        event.preventDefault()
+        graveyardMenuPosition.value = { x: event.clientX, y: event.clientY }
+        showGraveyardMenu.value = true
+    }
+
+    function closeGraveyardMenu() {
+        showGraveyardMenu.value = false
+    }
+
+    function startGraveyardSearch() {
+        isGraveyardSearching.value = true
+        graveyardTab.value = 'graveyard'
+        graveyardFilter.value = ''
+        closeGraveyardMenu()
+    }
+
+    function stopGraveyardSearch() {
+        isGraveyardSearching.value = false
+        graveyardFilter.value = ''
+    }
+
     function handleCardHover(card: CardInstance) {
         hoveredCard.value = card
     }
@@ -684,6 +718,16 @@ export function useGameView() {
         shuffleAfterSearch,
         isShuffling,
         shuffleWithLabel,
+        isGraveyardSearching,
+        graveyardTab,
+        graveyardFilter,
+        filteredGraveyardCards,
+        showGraveyardMenu,
+        graveyardMenuPosition,
+        handleGraveyardContextMenu,
+        closeGraveyardMenu,
+        startGraveyardSearch,
+        stopGraveyardSearch,
         filteredLibraryCards,
         showLibraryMenu,
         libraryMenuPosition,
