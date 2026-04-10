@@ -573,6 +573,22 @@
     align-items: center;
 }
 
+.scrying-label {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(27, 67, 50, 0.85);
+    border: 1px solid #74c69d;
+    color: #95d5b2;
+    padding: 0.35rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    pointer-events: none;
+    z-index: 10;
+}
+
 .controls-overlay {
     position: absolute;
     bottom: 0.5rem;

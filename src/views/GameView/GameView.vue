@@ -174,6 +174,9 @@ const {
                 </div>
             </div>
 
+            <!-- Scrying Label -->
+            <div v-if="game.hand.some(c => c.isScrying)" class="scrying-label">Scrying...</div>
+
             <!-- Controls Overlay -->
             <div class="controls-overlay">
                 <button @click="game.untapAll()">Untap</button>
