@@ -44,7 +44,6 @@ export function useGameView() {
     const deckText = ref('')
     const loadError = ref<string | null>(null)
     const isCommanderDeck = ref(false)
-    const showConfirmStep = ref(false)
     const parsedEntries = ref<ParsedDeckEntry[]>([])
     const selectedCommanderNames = ref<string[]>([])
     const confirmFilter = ref('')
@@ -82,6 +81,18 @@ export function useGameView() {
     const freeformText = ref('')
     const freeformInput = ref<HTMLInputElement | null>(null)
     const pendingFreeformCardId = ref<string | null>(null)
+
+    watch(deckText, (val) => {
+        loadError.value = null
+        if (!val.trim()) {
+            parsedEntries.value = []
+            selectedCommanderNames.value = []
+            return
+        }
+        const entries = parseDeckList(val)
+        parsedEntries.value = entries
+        selectedCommanderNames.value = []
+    })
 
     watch(showDrawXModal, (val) => {
         if (val) {
@@ -167,24 +178,6 @@ export function useGameView() {
         }
     }
 
-    function previewDeck() {
-        loadError.value = null
-        const entries = parseDeckList(deckText.value)
-        if (entries.length === 0) {
-            loadError.value = 'No cards found. Make sure you pasted a valid deck list.'
-            return
-        }
-        parsedEntries.value = entries
-        selectedCommanderNames.value = []
-        showConfirmStep.value = true
-    }
-
-    function goBackToDeckInput() {
-        showConfirmStep.value = false
-        confirmFilter.value = ''
-        loadError.value = null
-    }
-
     function toggleCommanderSelection(name: string) {
         const idx = selectedCommanderNames.value.indexOf(name)
         if (idx >= 0) {
@@ -255,7 +248,6 @@ export function useGameView() {
 
         loading.value = false
         showLoadModal.value = false
-        showConfirmStep.value = false
         deckText.value = ''
         parsedEntries.value = []
         selectedCommanderNames.value = []
@@ -583,15 +575,12 @@ export function useGameView() {
         deckText,
         loadError,
         isCommanderDeck,
-        showConfirmStep,
         groupedEntries,
         filteredGroupedEntries,
         totalCardCount,
         needsCommanderSelection,
         selectedCommanderNames,
         confirmFilter,
-        previewDeck,
-        goBackToDeckInput,
         toggleCommanderSelection,
         confirmLoadDeck,
         handleDragStart,

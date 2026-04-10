@@ -46,15 +46,12 @@ const {
     deckText,
     loadError,
     isCommanderDeck,
-    showConfirmStep,
     groupedEntries,
     filteredGroupedEntries,
     totalCardCount,
     needsCommanderSelection,
     selectedCommanderNames,
     confirmFilter,
-    previewDeck,
-    goBackToDeckInput,
     toggleCommanderSelection,
     confirmLoadDeck,
     contextMenuCard,
@@ -326,33 +323,26 @@ const {
         <!-- Deck Loader Modal -->
         <div v-if="showLoadModal" class="modal-overlay" @click.self="!loading && (showLoadModal = false)">
             <div class="modal-content" @click.stop>
+                <h2>Load Deck</h2>
+                <p>Paste your deck list below.<br><small>In Moxfield: Export → Text or MTGO format</small></p>
+                <textarea
+                    v-model="deckText"
+                    placeholder="// Commander&#10;1 Atraxa, Praetors' Voice&#10;&#10;// Deck&#10;1 Sol Ring&#10;..."
+                    class="deck-input"
+                />
+                <label class="commander-check">
+                    <input type="checkbox" v-model="isCommanderDeck" />
+                    Commander deck
+                </label>
 
-                <!-- Step 1: Paste deck list -->
-                <template v-if="!showConfirmStep">
-                    <h2>Load Deck</h2>
-                    <p>Paste your deck list below.<br><small>In Moxfield: Export → Text or MTGO format</small></p>
-                    <textarea
-                        v-model="deckText"
-                        placeholder="// Commander&#10;1 Atraxa, Praetors' Voice&#10;&#10;// Deck&#10;1 Sol Ring&#10;..."
-                        class="deck-input"
-                    />
-                    <label class="commander-check">
-                        <input type="checkbox" v-model="isCommanderDeck" />
-                        Commander deck
-                    </label>
-                    <p v-if="loadError" class="load-error">{{ loadError }}</p>
-                    <div class="modal-buttons">
-                        <button @click="showLoadModal = false">Cancel</button>
-                        <button @click="previewDeck" :disabled="!deckText.trim()">Next</button>
+                <!-- Inline card list, shown when commander deck is checked and text is pasted -->
+                <template v-if="isCommanderDeck && groupedEntries.length > 0">
+                    <div class="confirm-header">
+                        <span class="card-count">{{ totalCardCount }} cards</span>
+                        <p v-if="needsCommanderSelection" class="confirm-hint">
+                            Select up to 2 commanders:
+                        </p>
                     </div>
-                </template>
-
-                <!-- Step 2: Confirm card list -->
-                <template v-else>
-                    <h2>Confirm Deck <span class="card-count">({{ totalCardCount }} cards)</span></h2>
-                    <p v-if="needsCommanderSelection" class="confirm-hint">
-                        Select up to 2 commanders:
-                    </p>
                     <input
                         v-model="confirmFilter"
                         type="text"
@@ -374,14 +364,15 @@ const {
                             <span v-if="entry.quantity > 1" class="card-confirm-qty">×{{ entry.quantity }}</span>
                         </label>
                     </div>
-                    <div class="modal-buttons">
-                        <button @click="goBackToDeckInput">Back</button>
-                        <button @click="confirmLoadDeck" :disabled="loading">
-                            {{ loading ? 'Loading...' : 'Load Deck' }}
-                        </button>
-                    </div>
                 </template>
 
+                <p v-if="loadError" class="load-error">{{ loadError }}</p>
+                <div class="modal-buttons">
+                    <button @click="showLoadModal = false">Cancel</button>
+                    <button @click="confirmLoadDeck" :disabled="loading || !deckText.trim()">
+                        {{ loading ? 'Loading...' : 'Load Deck' }}
+                    </button>
+                </div>
             </div>
         </div>
 
