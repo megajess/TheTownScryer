@@ -351,7 +351,10 @@ const {
                         @dragstart="game.graveyard[game.graveyard.length - 1] && handleDragStart($event, game.graveyard[game.graveyard.length - 1]!.id)"
                         @dragend="handleDragEnd"
                         @dragover="handleDragOver"
-                        @drop="handleDrop($event, 'graveyard')">
+                        @drop="handleDrop($event, 'graveyard')"
+                        @mouseenter="game.graveyard[game.graveyard.length - 1] && handleCardHover(game.graveyard[game.graveyard.length - 1]!)"
+                        @mousemove="game.graveyard[game.graveyard.length - 1] && handleCardMove($event, game.graveyard[game.graveyard.length - 1]!)"
+                        @mouseleave="handleCardLeave">
                         <GraveyardIcon v-if="game.graveyard.length === 0" class="zone-card-back" />
                         <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
                             class="zone-card-back" />
@@ -366,7 +369,10 @@ const {
                         @dragstart="game.exile[game.exile.length - 1] && handleDragStart($event, game.exile[game.exile.length - 1]!.id)"
                         @dragend="handleDragEnd"
                         @dragover="handleDragOver"
-                        @drop="handleDrop($event, 'exile')">
+                        @drop="handleDrop($event, 'exile')"
+                        @mouseenter="game.exile[game.exile.length - 1] && handleCardHover(game.exile[game.exile.length - 1]!)"
+                        @mousemove="game.exile[game.exile.length - 1] && handleCardMove($event, game.exile[game.exile.length - 1]!)"
+                        @mouseleave="handleCardLeave">
                         <ExileIcon v-if="game.exile.length === 0" class="zone-card-back" />
                         <img v-else :src="game.exile[game.exile.length - 1]?.imageUrl" alt="Top of exile"
                             class="zone-card-back" />
