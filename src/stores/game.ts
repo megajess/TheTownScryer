@@ -281,6 +281,10 @@ export const useGameStore = defineStore('game', () => {
         }
     }
 
+    function addTokenToBattlefield(token: CardInstance) {
+        battlefield.value.push(token)
+    }
+
     function placeOnBattlefield(cardId: string, fromZone: ZoneType, x: number, y: number) {
         const card = findCard(cardId)
         if (!card) return
@@ -305,6 +309,7 @@ export const useGameStore = defineStore('game', () => {
         loadCommandZone,
         findCard,
         moveCard,
+        addTokenToBattlefield,
         placeOnBattlefield,
         toggleTap,
         untapAll,

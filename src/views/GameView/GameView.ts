@@ -8,6 +8,19 @@ import { parseDeckList, type ParsedDeckEntry } from '@/services/deckParser'
 const _cardBackPreload = new Image()
 _cardBackPreload.src = CARD_BACK_URL
 
+function getCardFaceUrl(card: CardInstance): string {
+    if (card.faceDown) return CARD_BACK_URL
+    if (card.isFlipped && card.backImageUrl) return card.backImageUrl
+    return card.imageUrl
+}
+
+function getCardPeekUrl(card: CardInstance): string {
+    if (card.faceDown) return card.imageUrl
+    if (card.isFlipped && card.backImageUrl) return card.imageUrl
+    if (card.backImageUrl) return card.backImageUrl
+    return getCardFaceUrl(card)
+}
+
 export function useGameView() {
     const CANVAS_MULTIPLIER = 3.5
     const BATTLEFIELD_CARD_WIDTH = 150
@@ -23,6 +36,7 @@ export function useGameView() {
     const hoveredCard = ref<CardInstance | null>(null)
     const magnifierPosition = ref({ x: 0, y: 0 })
     const isShiftPressed = ref(false)
+    const isAltPressed = ref(false)
     const zoomLevel = ref(1.0)
     const battlefieldRef = ref<HTMLElement | null>(null)
     const panX = ref(0)
@@ -35,6 +49,10 @@ export function useGameView() {
     const viewportWidth = ref(window.innerWidth)
     const battlefieldHeight = ref(0)
     const isHoveringLibrary = ref(false)
+    const showTokenModal = ref(false)
+    const tokenText = ref('')
+    const tokenTextInput = ref<HTMLInputElement | null>(null)
+
     const showDrawXModal = ref(false)
     const drawXCount = ref<number | null>(null)
     const drawXInput = ref<HTMLInputElement | null>(null)
@@ -179,6 +197,7 @@ export function useGameView() {
     onMounted(async () => {
         window.addEventListener('keydown', handleKeyDown)
         window.addEventListener('keyup', handleKeyUp)
+        window.addEventListener('blur', handleWindowBlur)
 
         await nextTick()
 
@@ -192,6 +211,7 @@ export function useGameView() {
         clearInterval(_ellipsisInterval)
         window.removeEventListener('keydown', handleKeyDown)
         window.removeEventListener('keyup', handleKeyUp)
+        window.removeEventListener('blur', handleWindowBlur)
         window.removeEventListener('resize', updateDimensions)
     })
 
@@ -220,6 +240,12 @@ export function useGameView() {
             return
         }
 
+        if (key === 'alt') {
+            isAltPressed.value = true
+
+            return
+        }
+
         if (isHoveringLibrary.value) {
             const num = parseInt(key)
 
@@ -241,6 +267,15 @@ export function useGameView() {
         if (event.key === 'Shift') {
             isShiftPressed.value = false
         }
+
+        if (event.key === 'Alt') {
+            isAltPressed.value = false
+        }
+    }
+
+    function handleWindowBlur() {
+        isShiftPressed.value = false
+        isAltPressed.value = false
     }
 
     function toggleCommanderSelection(name: string) {
@@ -605,6 +640,36 @@ export function useGameView() {
         pendingFreeformCardId.value = null
     }
 
+    function openTokenModal() {
+        tokenText.value = ''
+        showTokenModal.value = true
+        openMenu.value = null
+        nextTick(() => tokenTextInput.value?.focus())
+    }
+
+    function handleCreateToken() {
+        const text = tokenText.value.trim()
+        if (!text) return
+        const token: CardInstance = {
+            id: crypto.randomUUID(),
+            cardId: '',
+            name: text,
+            imageUrl: CARD_BACK_URL,
+            zone: 'battlefield',
+            tapped: false,
+            faceDown: false,
+            startsInCommandZone: false,
+            isToken: true,
+            counters: [],
+            isFlipped: false,
+            x: 150,
+            y: 150,
+        }
+        game.addTokenToBattlefield(token)
+        showTokenModal.value = false
+        tokenText.value = ''
+    }
+
     function closeContextMenu() {
         showContextMenu.value = false
         contextMenuCard.value = null
@@ -730,6 +795,9 @@ export function useGameView() {
         hoveredCard,
         magnifierPosition,
         isShiftPressed,
+        isAltPressed,
+        getCardFaceUrl,
+        getCardPeekUrl,
         zoomLevel,
         panX,
         panY,
@@ -740,6 +808,11 @@ export function useGameView() {
         viewportWidth,
         battlefieldHeight,
         isHoveringLibrary,
+        showTokenModal,
+        tokenText,
+        tokenTextInput,
+        openTokenModal,
+        handleCreateToken,
         showDrawXModal,
         drawXCount,
         drawXInput,

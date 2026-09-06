@@ -23,6 +23,9 @@ const {
     hoveredCard,
     magnifierPosition,
     isShiftPressed,
+    isAltPressed,
+    getCardFaceUrl,
+    getCardPeekUrl,
     zoomLevel,
     panX,
     panY,
@@ -33,6 +36,11 @@ const {
     viewportWidth,
     battlefieldHeight,
     isHoveringLibrary,
+    showTokenModal,
+    tokenText,
+    tokenTextInput,
+    openTokenModal,
+    handleCreateToken,
     showDrawXModal,
     drawXCount,
     drawXInput,
@@ -135,6 +143,7 @@ const {
                     <div class="menu-option" @click.stop="game.draw(); openMenu = null">Draw</div>
                     <div class="menu-option" @click.stop="showLoadModal = true; openMenu = null">Load Deck</div>
                     <div class="menu-option" :class="{ 'menu-option--disabled': !isDeckLoaded }" @click.stop="isDeckLoaded && startNewGame()">New Game</div>
+                    <div class="menu-option" @click.stop="openTokenModal()">Add Token</div>
                     <div class="menu-option" @click.stop="resetView(); openMenu = null">Reset View</div>
                 </div>
             </div>
@@ -177,7 +186,8 @@ const {
                     :class="{ 'is-tapped': card.tapped }" :style="{ left: card.x + 'px', top: card.y + 'px' }"
                     draggable="true" @mouseenter="handleCardHover(card)" @mousemove="handleCardMove($event, card)"
                     @mouseleave="handleCardLeave" @dragstart="handleDragStart($event, card.id)" @dragend="handleDragEnd">
-                    <img :src="card.faceDown ? CARD_BACK_URL : (card.isFlipped && card.backImageUrl ? card.backImageUrl : card.imageUrl)" :alt="card.name" loading="lazy" />
+                    <img :src="getCardFaceUrl(card)" :alt="card.name" loading="lazy" />
+                    <div v-if="card.isToken && !card.faceDown" class="token-text">{{ card.name }}</div>
                     <button class="card-menu-btn" @click.stop="handleContextMenu($event, card.id)"><HamburgerIcon /></button>
                     <div v-if="card.counters.length" class="counter-overlays">
                         <div class="counter-group counter-group--bottom-left">
@@ -242,13 +252,13 @@ const {
             <!-- Magnified Card Overlay -->
             <div v-if="magnifiedCard" class="magnified-card-overlay">
                 <button class="magnified-card-close" @click="magnifiedCard = null">✕</button>
-                <img :src="magnifiedCard.faceDown ? CARD_BACK_URL : magnifiedCard.imageUrl" :alt="magnifiedCard.name" />
+                <img :src="getCardFaceUrl(magnifiedCard)" :alt="magnifiedCard.name" />
             </div>
 
             <!-- Command Zone Magnifier -->
             <div v-if="hoveredCard && isShiftPressed && hoveredCard.zone === 'commandZone'" class="card-magnifier reveal-magnifier">
                 <div class="magnifier-lens" :style="{
-                    backgroundImage: `url(${hoveredCard.imageUrl})`,
+                    backgroundImage: `url(${isAltPressed ? getCardPeekUrl(hoveredCard) : getCardFaceUrl(hoveredCard)})`,
                     backgroundPosition: `${magnifierPosition.x * 100}% ${magnifierPosition.y * 100}%`,
                     backgroundSize: '400px auto'
                 }"></div>
@@ -257,7 +267,7 @@ const {
             <!-- Reveal Card Magnifier -->
             <div v-if="hoveredCard && isShiftPressed && hoveredCard.zone === 'reveal'" class="card-magnifier reveal-magnifier">
                 <div class="magnifier-lens" :style="{
-                    backgroundImage: `url(${hoveredCard.imageUrl})`,
+                    backgroundImage: `url(${isAltPressed ? getCardPeekUrl(hoveredCard) : getCardFaceUrl(hoveredCard)})`,
                     backgroundPosition: `${magnifierPosition.x * 100}% ${magnifierPosition.y * 100}%`,
                     backgroundSize: '400px auto'
                 }"></div>
@@ -336,7 +346,11 @@ const {
                         <button class="zone-menu-btn" @click.stop="handleLibraryContextMenu($event)"><HamburgerIcon /></button>
                     </div>
 
-                    <div class="overlay-zone graveyard-zone" @dragover="handleDragOver"
+                    <div class="overlay-zone graveyard-zone"
+                        :draggable="game.graveyard.length > 0"
+                        @dragstart="game.graveyard[game.graveyard.length - 1] && handleDragStart($event, game.graveyard[game.graveyard.length - 1]!.id)"
+                        @dragend="handleDragEnd"
+                        @dragover="handleDragOver"
                         @drop="handleDrop($event, 'graveyard')">
                         <GraveyardIcon v-if="game.graveyard.length === 0" class="zone-card-back" />
                         <img v-else :src="game.graveyard[game.graveyard.length - 1]?.imageUrl" alt="Top of graveyard"
@@ -347,7 +361,12 @@ const {
                         <button class="zone-menu-btn" @click.stop="handleGraveyardContextMenu($event)"><HamburgerIcon /></button>
                     </div>
 
-                    <div class="overlay-zone exile-zone" @dragover="handleDragOver" @drop="handleDrop($event, 'exile')">
+                    <div class="overlay-zone exile-zone"
+                        :draggable="game.exile.length > 0"
+                        @dragstart="game.exile[game.exile.length - 1] && handleDragStart($event, game.exile[game.exile.length - 1]!.id)"
+                        @dragend="handleDragEnd"
+                        @dragover="handleDragOver"
+                        @drop="handleDrop($event, 'exile')">
                         <ExileIcon v-if="game.exile.length === 0" class="zone-card-back" />
                         <img v-else :src="game.exile[game.exile.length - 1]?.imageUrl" alt="Top of exile"
                             class="zone-card-back" />
@@ -370,7 +389,7 @@ const {
             <!-- Card Magnifier -->
             <div v-if="hoveredCard && isShiftPressed && hoveredCard.zone !== 'reveal' && hoveredCard.zone !== 'commandZone'" class="card-magnifier">
                 <div class="magnifier-lens" :style="{
-                    backgroundImage: `url(${hoveredCard.imageUrl})`,
+                    backgroundImage: `url(${isAltPressed ? getCardPeekUrl(hoveredCard) : getCardFaceUrl(hoveredCard)})`,
                     backgroundPosition: `${magnifierPosition.x * 100}% ${magnifierPosition.y * 100}%`,
                     backgroundSize: '400px auto'
                 }">
@@ -457,6 +476,18 @@ const {
                     <img :src="card.imageUrl" :alt="card.name" loading="lazy" />
                     <button class="card-menu-btn" @click.stop="handleContextMenu($event, card.id)"><HamburgerIcon /></button>
                     <span v-if="card.faceDown" class="facedown-label" @click.stop="game.setFaceDown(card.id, false)">Facedown</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Token Modal -->
+        <div v-if="showTokenModal" class="modal-overlay" @click.self="showTokenModal = false">
+            <div class="modal-content">
+                <p>Token text:</p>
+                <input ref="tokenTextInput" type="text" v-model="tokenText" placeholder="e.g. 1/1 Soldier" @keyup.enter="handleCreateToken" />
+                <div class="modal-buttons">
+                    <button @click="showTokenModal = false">Cancel</button>
+                    <button @click="handleCreateToken" :disabled="!tokenText.trim()">Add Token</button>
                 </div>
             </div>
         </div>
